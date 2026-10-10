@@ -57,6 +57,33 @@ struct SettingsView: View {
                                 .fixedSize()
                         }
                     }
+                    Divider().overlay(Color.white.opacity(0.08))
+                    Toggle(isOn: Binding(
+                        get: { model.settings.breakRemindersEnabled },
+                        set: { on in model.updateSettings { $0.breakRemindersEnabled = on } }
+                    )) {
+                        Text("Break reminders").font(.system(size: 13))
+                    }
+                    .toggleStyle(.switch)
+                    .controlSize(.mini)
+                    .tint(Theme.green)
+                    if model.settings.breakRemindersEnabled {
+                        HStack {
+                            Text("a 5-min walk after every")
+                                .font(Theme.mono())
+                                .foregroundStyle(Theme.muted)
+                            Spacer()
+                            Stepper(value: Binding(
+                                get: { model.settings.breakIntervalMinutes },
+                                set: { minutes in model.updateSettings { $0.breakIntervalMinutes = minutes } }
+                            ), in: 30...120, step: 15) {
+                                Text("\(model.settings.breakIntervalMinutes) min")
+                                    .font(Theme.mono())
+                                    .monospacedDigit()
+                            }
+                            .controlSize(.mini)
+                        }
+                    }
                 }
                 .card()
             }

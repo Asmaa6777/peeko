@@ -9,6 +9,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
     /// Minutes after local midnight; 21:00 by default.
     public var eveningNudgeMinutes = 21 * 60
     public var hasCompletedOnboarding = false
+    public var breakRemindersEnabled = true
+    public var breakIntervalMinutes = 60
 
     public init() {}
 
@@ -21,6 +23,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         eveningNudgeEnabled = try c.decodeIfPresent(Bool.self, forKey: .eveningNudgeEnabled) ?? d.eveningNudgeEnabled
         eveningNudgeMinutes = try c.decodeIfPresent(Int.self, forKey: .eveningNudgeMinutes) ?? d.eveningNudgeMinutes
         hasCompletedOnboarding = try c.decodeIfPresent(Bool.self, forKey: .hasCompletedOnboarding) ?? d.hasCompletedOnboarding
+        breakRemindersEnabled = try c.decodeIfPresent(Bool.self, forKey: .breakRemindersEnabled) ?? d.breakRemindersEnabled
+        breakIntervalMinutes = try c.decodeIfPresent(Int.self, forKey: .breakIntervalMinutes) ?? d.breakIntervalMinutes
     }
 }
 

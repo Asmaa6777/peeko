@@ -275,11 +275,55 @@ do {
     check(completed == ["github-push"], "completion fires once, and never for manual taps")
 }
 
+// MARK: - Break reminders
+
+group("BreakTracker")
+do {
+    func run(_ tracker: inout BreakTracker, from start: Date, seconds: Int, idle: TimeInterval = 5) -> [Date] {
+        var due: [Date] = []
+        for i in stride(from: 0, through: seconds, by: 10) {
+            let now = start.addingTimeInterval(Double(i))
+            if tracker.record(sample(now, "com.apple.Safari", idle: idle), interval: 3600) { due.append(now) }
+        }
+        return due
+    }
+    let start = at(10, 9, 0)
+
+    var tracker = BreakTracker()
+    let due = run(&tracker, from: start, seconds: 2 * 3600)
+    check(due == [start.addingTimeInterval(3600), start.addingTimeInterval(7200)], "reminds after each active hour, in any app")
+
+    var idleBreak = BreakTracker()
+    _ = run(&idleBreak, from: start, seconds: 50 * 60)
+    _ = idleBreak.record(sample(start.addingTimeInterval(50 * 60 + 10), nil, idle: 300), interval: 3600)
+    check(idleBreak.activeSeconds == 0, "5 minutes away from the keyboard counts as the break")
+    check(run(&idleBreak, from: start.addingTimeInterval(50 * 60 + 20), seconds: 20 * 60).isEmpty, "so 50 + 20 minutes around a break doesn't remind")
+
+    var sleepy = BreakTracker()
+    _ = run(&sleepy, from: start, seconds: 50 * 60)
+    _ = sleepy.record(sample(start.addingTimeInterval(50 * 60 + 600), "com.apple.Safari", idle: 2), interval: 3600)
+    check(sleepy.activeSeconds == 0, "a 10-minute gap between ticks (Mac asleep) counts as a break")
+
+    var reading = BreakTracker()
+    let readingDue = run(&reading, from: start, seconds: 3600, idle: 90)
+    check(readingDue.count == 1, "reading without touching the mouse for 90s still counts as active")
+
+    var halfIdle = BreakTracker()
+    _ = run(&halfIdle, from: start, seconds: 600)
+    let before = halfIdle.activeSeconds
+    _ = halfIdle.record(sample(start.addingTimeInterval(610), nil, idle: 200), interval: 3600)
+    check(halfIdle.activeSeconds == before, "idle between 2 and 5 minutes neither counts nor resets")
+
+    check(BreakMessages.all(minutes: 60).allSatisfy { $0.body.contains("5 minutes") }, "every message asks for 5 minutes")
+    check(BreakMessages.duration(minutes: 60) == "an hour" && BreakMessages.duration(minutes: 90) == "90 minutes", "duration wording")
+}
+
 // MARK: - Settings and the evening nudge
 
 group("AppSettings and EveningNudge")
 do {
     let legacy = try! JSONDecoder().decode(AppSettings.self, from: Data(#"{"schemaVersion":1,"githubUsername":"octocat"}"#.utf8))
+    check(legacy.breakRemindersEnabled && legacy.breakIntervalMinutes == 60, "break reminders default to on, every 60 minutes")
     check(legacy.githubUsername == "octocat" && legacy.eveningNudgeEnabled && legacy.eveningNudgeMinutes == 21 * 60,
           "missing fields fall back to defaults")
 

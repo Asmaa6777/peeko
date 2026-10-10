@@ -29,6 +29,8 @@ final class AppModel {
     private(set) var notificationStatus: UNAuthorizationStatus = .notDetermined
     private(set) var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
     private var localError: String?
+    private var breakTracker = BreakTracker()
+    private var breakMessageIndex = 0
 
     private static let lastNudgeDayKey = "lastNudgeDay"
 
@@ -46,7 +48,10 @@ final class AppModel {
         scheduler.tasks = taskList.tasks
         scheduler.githubUsername = settings.githubUsername
         scheduler.onAutoComplete = { [weak self] task in self?.notifyCompleted(task) }
-        scheduler.onTick = { [weak self] now in self?.nudgeIfDue(now: now) }
+        scheduler.onTick = { [weak self] sample in
+            self?.nudgeIfDue(now: sample.now)
+            self?.remindToTakeBreakIfDue(sample)
+        }
         scheduler.start()
         Task { await refreshSystemStatus() }
     }
@@ -199,6 +204,15 @@ final class AppModel {
             title: "Peeko's still peeking",
             body: remaining == 1 ? "1 task left today." : "\(remaining) tasks left today."
         )
+    }
+
+    private func remindToTakeBreakIfDue(_ sample: ActivitySample) {
+        let interval = TimeInterval(settings.breakIntervalMinutes * 60)
+        guard breakTracker.record(sample, interval: interval), settings.breakRemindersEnabled else { return }
+        let messages = BreakMessages.all(minutes: settings.breakIntervalMinutes)
+        let message = messages[breakMessageIndex % messages.count]
+        breakMessageIndex += 1
+        notifier.post(id: "break-\(sample.now.timeIntervalSince1970)", title: message.title, body: message.body)
     }
 
     private func saveTaskList() {

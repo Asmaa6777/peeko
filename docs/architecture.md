@@ -112,6 +112,7 @@ The scheduler moves to a new day file on every tick, on `NSCalendarDayChanged`, 
 - **Notifications** (`Notifier`, wrapping `UNUserNotificationCenter`):
   - `Scheduler.onAutoComplete` fires once when an *automatic* task flips to done, and the app posts "Peeko saw that!". Manual taps never notify.
   - `Scheduler.onTick` drives the evening reminder. `EveningNudge.isDue` decides, and the last reminder's day is kept in `UserDefaults` so it fires at most once a day.
+  - Break reminders also run from `onTick`. `BreakTracker`, a pure struct in the core, adds up active screen time in any app: input within 2 minutes counts, using the same capped 10-second ticks. Five or more minutes idle, or a 5+ minute gap between ticks (asleep, app not running), counts as the break and resets the count. Each reminder also restarts it. The messages rotate (`BreakMessages`). The interval and on/off live in `AppSettings`.
   - Banners show even while the popover is open.
 - **Onboarding** replaces the tabs on first launch, until `hasCompletedOnboarding`: welcome, then the notification permission (with a reason), then an optional GitHub username. The tab bar stays in the layout, invisible, so the panel height doesn't change.
 - **`RootView`** draws the header (face, wordmark, `done / total`), the Today and Catalog tabs, and the footer. The content area has a **fixed height**: a `MenuBarExtra` window that resizes when you switch tabs drifts away from the menu bar.

@@ -15,8 +15,8 @@ public final class Scheduler {
 
     /// Called once when an automatic task flips to done (never for manual taps).
     @ObservationIgnored public var onAutoComplete: (@MainActor (TaskDefinition) -> Void)?
-    /// Called after every tick.
-    @ObservationIgnored public var onTick: (@MainActor (Date) -> Void)?
+    /// Called after every tick with that tick's activity sample.
+    @ObservationIgnored public var onTick: (@MainActor (ActivitySample) -> Void)?
 
     @ObservationIgnored private let store: Store
     @ObservationIgnored private let frontmost: any FrontmostAppProvider
@@ -84,7 +84,7 @@ public final class Scheduler {
         let credited = activity.record(sample, tasks: tasks, into: &record)
         let statusesChanged = await evaluateAutomaticTasks(now: now)
         if !credited.isEmpty || statusesChanged { save() }
-        onTick?(now)
+        onTick?(sample)
     }
 
     /// Re-evaluates without crediting time, e.g. right after a task is enabled.

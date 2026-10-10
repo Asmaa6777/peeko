@@ -51,7 +51,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Can I ping you?")
                 .font(Theme.display(22))
-            Text("I'll send one note when I tick something off for you, and, if you like, one in the evening when there's still something left. That's it.")
+            Text("I'll send a note when I tick something off for you, a nudge to stand up and walk after an hour at the screen, and one in the evening if something's left. You can turn any of these off in Settings.")
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.chalk.opacity(0.85))
                 .fixedSize(horizontal: false, vertical: true)
