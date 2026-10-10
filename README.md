@@ -17,6 +17,7 @@ Early days. What works right now:
 - tasks that count time in an app, like reading in Preview or deep work in your editor, including ones you set up yourself
 - a daily "did I push to GitHub?" check
 - a note when Peeko ticks something off for you, and an optional evening reminder if anything's left
+- a gentle nudge to get up and walk for 5 minutes after every hour at the screen (stepping away for 5 minutes resets it)
 - launch at login
 - everything saved locally, with a fresh list each morning
 
@@ -24,15 +25,23 @@ Not built yet: auto-updates. For now, new versions are on the Releases page.
 
 ## Install
 
-Once the first version is out, grab `Peeko-x.y.z.dmg` from [Releases](https://github.com/STACK-42/peeko/releases), open it, and drag Peeko into Applications.
+Paste this into Terminal:
 
-Peeko isn't signed with an Apple Developer ID yet, so macOS will block it the first time you open it. To let it through:
+```sh
+curl -fsSL https://raw.githubusercontent.com/STACK-42/peeko/main/install.sh | bash
+```
+
+It downloads the latest release, checks its checksum, puts Peeko in Applications, and opens it. Run it again any time to update. [Read the script](install.sh) first if you like; it's short.
+
+Or do it by hand: grab `Peeko-x.y.z.dmg` from [Releases](https://github.com/STACK-42/peeko/releases), open it, and drag Peeko into Applications. Peeko isn't signed with an Apple Developer ID yet, so macOS will block it the first time you open it:
 
 1. Open Peeko once and close the warning.
 2. Go to **System Settings → Privacy & Security** and scroll down.
 3. Click **Open Anyway** next to the Peeko message, then confirm.
 
-You only have to do this once. Building from source (below) skips it entirely.
+You only have to do that once. The install script and building from source both skip it.
+
+To uninstall, quit Peeko, then delete `/Applications/Peeko.app`. If you want your history gone too, delete `~/Library/Application Support/Peeko`.
 
 ## Privacy
 
@@ -59,7 +68,7 @@ cd peeko
 make run
 ```
 
-That builds `build/Peeko.app` and opens it. Look for the eyes in your menu bar. If your menu bar is crowded, macOS might hide the icon behind the `«` overflow; ⌘-drag it somewhere you can see it.
+That builds `build/Peeko.app` and opens it. Use `make install` instead to put it in Applications (launch at login works best from there). Look for the eyes in your menu bar. If your menu bar is crowded, macOS might hide the icon behind the `«` overflow; ⌘-drag it somewhere you can see it.
 
 ## Docs
 

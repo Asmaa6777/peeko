@@ -13,7 +13,7 @@ Peeko is a local-first macOS menu bar app (Swift 6, SwiftUI, SwiftPM, **no Xcode
 - [docs/brand/Peeko Brand.dc.html](<docs/brand/Peeko Brand.dc.html>): character, colors, and the three status faces.
 - `README.md` is public-facing. Keep it short, plain and human. Put dev details in `docs/`, not the README.
 
-**Status:** Phases 1–4 are done, and Phase 5 packaging (icon, DMG, release workflow) is in place. Next: README screenshots, then tag v0.1.0. Sparkle is postponed to v0.2.
+**Status:** v0.1.0 (Phases 1–5, plus break reminders). Sparkle auto-updates are planned for v0.2; see the blueprint's roadmap (§9).
 
 **Naming:** the blueprint's working name was "Proof". Use **Peeko** everywhere (`PeekoCore`, `Peeko.app`, `com.a7med7x7.peeko`, `~/Library/Application Support/Peeko/`, `User-Agent: Peeko-App`, `Peeko-x.y.z.dmg`).
 
@@ -22,6 +22,7 @@ Peeko is a local-first macOS menu bar app (Swift 6, SwiftUI, SwiftPM, **no Xcode
 - `make run`: build, bundle and ad-hoc sign `build/Peeko.app`, then relaunch it. Always verify through the `.app`, never `swift run`.
 - `make check`: runs `Checks/main.swift` (`PeekoChecks` target), the stand-in for unit tests, since XCTest and Swift Testing both need Xcode. Add a `check(...)` case there for new core logic; it exits non-zero on failure.
 - `make dmg`: `build/Peeko-<version>.dmg` + `.sha256`. `make icon` regenerates `Resources/AppIcon.icns` from `scripts/make-icon.swift`.
+- `make install`: build and copy into `/Applications`. `install.sh` is the public one-liner that installs the latest GitHub release.
 - `make app` / `make clean` / `swift build` (quick compile check)
 - Release = bump `CFBundleShortVersionString` in `Resources/Info.plist`, add the matching `CHANGELOG.md` section, push tag `vX.Y.Z`. CI refuses mismatches.
 

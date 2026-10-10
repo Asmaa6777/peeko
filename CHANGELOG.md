@@ -4,6 +4,10 @@ All notable changes to Peeko are listed here. The format follows [Keep a Changel
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-10
+
+First release.
+
 ### Added
 
 - Menu bar app with a Today list and a Catalog of presets.
@@ -13,5 +17,6 @@ All notable changes to Peeko are listed here. The format follows [Keep a Changel
 - "Push to GitHub" task: checks your public GitHub activity every 10 minutes for a push made today, in your own time zone.
 - Settings: GitHub username, evening reminder time, launch at login, and a shortcut to your data folder.
 - Notifications: one when Peeko ticks something off for you, and an optional evening reminder when tasks are left.
+- Break reminders: after an hour of active screen time, Peeko suggests a 5-minute walk. Stepping away for 5 minutes resets the count. The interval is adjustable (30–120 minutes), or turn it off.
 - First-launch onboarding.
-- App icon and DMG installer.
+- App icon, DMG, and a one-line installer (`install.sh`).

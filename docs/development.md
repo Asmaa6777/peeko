@@ -17,6 +17,7 @@ Install the tools with `xcode-select --install`, and check them with `swift --ve
 |---|---|
 | `make run` | Builds, bundles and signs the app, quits any running copy, and opens `build/Peeko.app` |
 | `make app` | Builds, bundles and signs without launching |
+| `make install` | Builds, then replaces `/Applications/Peeko.app` and opens it |
 | `make check` | Runs the logic checks in `Checks/` (stand-in for unit tests, see below) |
 | `make clean` | Deletes `.build/` and `build/` |
 | `swift build` | Quick debug compile, useful to catch errors |

@@ -35,6 +35,8 @@ The icon is drawn in code from the brand geometry: Peeko hanging from a menu bar
 
 Before tagging, install the DMG on a second Mac (or a fresh user account) and make sure it launches.
 
+`install.sh` (served from `main` via raw.githubusercontent.com) installs whatever `/releases/latest` points to, so a new release reaches script users as soon as it's published. It needs both the `.dmg` and the `.sha256` attached. It refuses to install if the checksum doesn't match.
+
 ## Signing and Gatekeeper
 
 Releases are **ad-hoc signed** for now (`scripts/sign.sh` with no identity). That's free, but a downloaded copy is quarantined, and macOS blocks it the first time it opens. Since macOS 15, right-click → Open no longer gets past this. People need to:
