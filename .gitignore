@@ -2,3 +2,6 @@
 build/
 .swiftpm/
 .DS_Store
+# Copied in by `make site` and the Pages workflow
+site/assets/
+site/install.sh

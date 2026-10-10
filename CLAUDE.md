@@ -11,6 +11,7 @@ Peeko is a local-first macOS menu bar app (Swift 6, SwiftUI, SwiftPM, **no Xcode
 - [docs/development.md](docs/development.md): environment, commands, data folder, and toolchain quirks.
 - [docs/releasing.md](docs/releasing.md): icon, DMG, versioning, the tag-driven release workflow, and signing.
 - [docs/brand/Peeko Brand.dc.html](<docs/brand/Peeko Brand.dc.html>): character, colors, and the three status faces.
+- `site/` is the website at https://peeko.stack42.tech (GitHub Pages via `.github/workflows/pages.yml`, which copies in `install.sh` and `docs/assets/` images). Preview with `make site` (port 8642). It mirrors the app's look; keep its copy and the README in sync.
 - `README.md` is public-facing. Keep it short, plain and human. Put dev details in `docs/`, not the README.
 
 **Status:** v0.1.0 (Phases 1–5, plus break reminders). Sparkle auto-updates are planned for v0.2; see the blueprint's roadmap (§9).

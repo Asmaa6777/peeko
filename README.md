@@ -2,7 +2,7 @@
 
 # peeko
 
-A small menu bar app for macOS that keeps your daily list and ticks things off by itself.
+A small menu bar app for macOS that keeps your daily list and ticks things off by itself. **[peeko.stack42.tech](https://peeko.stack42.tech)**
 
 Peeko hangs from the top of your screen and peeks at what you're doing. Keep a PDF open in Preview for half an hour and "Read for 30 minutes" ticks itself. Push to GitHub and that one goes green as well. For the things it can't see, like the gym or drinking water, you tap them yourself.
 
@@ -28,7 +28,7 @@ Not built yet: auto-updates. For now, new versions are on the Releases page.
 Paste this into Terminal:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/STACK-42/peeko/main/install.sh | bash
+curl -fsSL https://peeko.stack42.tech/install.sh | bash
 ```
 
 It downloads the latest release, checks its checksum, puts Peeko in Applications, and opens it. Run it again any time to update. [Read the script](install.sh) first if you like; it's short.

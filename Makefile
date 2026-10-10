@@ -1,4 +1,4 @@
-.PHONY: build app run install check dmg icon clean
+.PHONY: build app run install check dmg icon social site clean
 
 build:
 	./scripts/build.sh
@@ -22,6 +22,15 @@ dmg: app
 
 icon:
 	./scripts/icon.sh
+
+social:
+	swift scripts/make-social.swift docs/assets/social-preview.png
+
+site:
+	mkdir -p site/assets
+	cp docs/assets/icon.png docs/assets/social-preview.png site/assets/
+	cp install.sh site/install.sh
+	cd site && python3 -m http.server 8642
 
 check:
 	swift run PeekoChecks

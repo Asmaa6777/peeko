@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peeko · peeks in, ticks off</title>
+  <meta name="description" content="A small macOS menu bar app that keeps your daily list and ticks things off by itself. Local-first, no account.">
+  <meta name="theme-color" content="#151515">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://peeko.stack42.tech/">
+  <meta property="og:title" content="Peeko · peeks in, ticks off">
+  <meta property="og:description" content="A small macOS menu bar app that keeps your daily list and ticks things off by itself.">
+  <meta property="og:image" content="https://peeko.stack42.tech/assets/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Face symbols, in the brand's 72×60 units. The head starts above the box so it looks like it hangs. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="face-dozing" viewBox="0 0 72 60">
+        <rect x="6" y="-12" width="60" height="62" rx="27" fill="var(--green)"/>
+        <rect x="18" y="24" width="12" height="3" rx="1.5" fill="var(--night)"/>
+        <rect x="42" y="24" width="12" height="3" rx="1.5" fill="var(--night)"/>
+      </symbol>
+      <symbol id="face-looking" viewBox="0 0 72 60">
+        <rect x="6" y="-12" width="60" height="62" rx="27" fill="var(--green)"/>
+        <circle cx="24" cy="24" r="8" fill="#fff"/>
+        <circle cx="48" cy="24" r="8" fill="#fff"/>
+        <circle cx="26.5" cy="22.5" r="3.5" fill="var(--night)"/>
+        <circle cx="50.5" cy="22.5" r="3.5" fill="var(--night)"/>
+      </symbol>
+      <symbol id="face-beaming" viewBox="0 0 72 60">
+        <rect x="6" y="-12" width="60" height="62" rx="27" fill="var(--green)"/>
+        <path d="M17.5 29 Q24 14 30.5 29 M41.5 29 Q48 14 54.5 29" fill="none" stroke="var(--night)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M30 34 h12 a6 6 0 0 1 -12 0 z" fill="var(--night)"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <header class="menubar">
+    <a class="menubar__brand" href="#top" aria-label="Peeko home">
+      <svg class="menubar__eyes" viewBox="0 0 22 16" aria-hidden="true">
+        <circle cx="7" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="15" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="7.6" cy="8.6" r="1.6" fill="currentColor"/>
+        <circle cx="15.6" cy="8.6" r="1.6" fill="currentColor"/>
+      </svg>
+      peeko
+    </a>
+    <nav class="menubar__nav" aria-label="Sections">
+      <a href="#what">What it is</a>
+      <a href="#examples">Examples</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/STACK-42/peeko">GitHub</a>
+    </nav>
+    <span class="menubar__clock" id="clock" aria-hidden="true">Sat 10 Oct 14:02</span>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <svg class="hero__peeko" id="hero-peeko" viewBox="0 0 72 60" aria-hidden="true">
+        <rect x="6" y="-12" width="60" height="62" rx="27" fill="var(--green)"/>
+        <circle cx="24" cy="24" r="8" fill="#fff"/>
+        <circle cx="48" cy="24" r="8" fill="#fff"/>
+        <circle class="pupil" cx="26.5" cy="22.5" r="3.5" fill="var(--night)" data-home-x="24" data-home-y="24"/>
+        <circle class="pupil" cx="50.5" cy="22.5" r="3.5" fill="var(--night)" data-home-x="48" data-home-y="24"/>
+      </svg>
+
+      <div class="hero__copy">
+        <h1 class="wordmark">peeko</h1>
+        <p class="tagline">peeks in, ticks off</p>
+        <p class="hero__lede">
+          A small menu bar app for macOS that keeps your daily list and ticks things off by itself.
+          Spend half an hour in Preview and <em>Read for 30 minutes</em> ticks itself. Push to GitHub and that one goes green too.
+        </p>
+
+        <div class="command" role="group" aria-label="Install command">
+          <code id="install-cmd">curl -fsSL https://peeko.stack42.tech/install.sh | bash</code>
+          <button class="command__copy" type="button" data-copy="install-cmd">Copy</button>
+        </div>
+        <p class="hero__meta">
+          macOS 14+ · Apple silicon · free and MIT-licensed ·
+          <a href="https://github.com/STACK-42/peeko/releases/latest">or download the DMG</a>
+        </p>
+      </div>
+
+      <div class="hero__demo" aria-label="What the Peeko panel looks like">
+        <div class="panel">
+          <div class="panel__header">
+            <svg class="face face--48"><use href="#face-looking"/></svg>
+            <div>
+              <div class="panel__wordmark">peeko</div>
+              <div class="panel__tagline">peeks in, ticks off</div>
+            </div>
+            <div class="panel__count"><strong>2 / 4</strong><span>today</span></div>
+          </div>
+          <div class="panel__tabs"><span class="is-active">Today</span><span>Catalog</span><span>Settings</span></div>
+          <ul class="panel__rows">
+            <li class="row">
+              <svg class="face face--30"><use href="#face-beaming"/></svg>
+              <div class="row__text"><span class="row__title is-done">Push to GitHub</span><span class="row__sub">Peeko saw that! · 09:41</span></div>
+              <svg class="check" viewBox="0 0 20 20" aria-label="done"><circle cx="10" cy="10" r="9" fill="var(--green)"/><path d="M6 10.5l2.6 2.6L14 7.6" fill="none" stroke="var(--night)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </li>
+            <li class="row">
+              <svg class="face face--30"><use href="#face-looking"/></svg>
+              <div class="row__text"><span class="row__title">Read for 30 minutes</span><span class="row__sub">18 of 30 min · Preview</span></div>
+              <svg class="ring" viewBox="0 0 20 20" aria-label="60 percent"><circle cx="10" cy="10" r="7.5"/><circle cx="10" cy="10" r="7.5" class="ring__fill" style="--p:.6"/></svg>
+            </li>
+            <li class="row">
+              <svg class="face face--30"><use href="#face-beaming"/></svg>
+              <div class="row__text"><span class="row__title is-done">Gym</span><span class="row__sub">done · 07:30</span></div>
+              <svg class="check" viewBox="0 0 20 20" aria-label="done"><circle cx="10" cy="10" r="9" fill="var(--green)"/><path d="M6 10.5l2.6 2.6L14 7.6" fill="none" stroke="var(--night)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </li>
+            <li class="row">
+              <svg class="face face--30"><use href="#face-dozing"/></svg>
+              <div class="row__text"><span class="row__title">Deep work for 90 minutes</span><span class="row__sub">90 min in VS Code / Terminal</span></div>
+              <svg class="ring" viewBox="0 0 20 20" aria-label="0 percent"><circle cx="10" cy="10" r="7.5"/></svg>
+            </li>
+          </ul>
+          <div class="panel__footer"><span>v0.1.0</span><span>Quit</span></div>
+        </div>
+
+        <div class="toast" aria-hidden="true">
+          <strong>Peeko saw that!</strong>
+          <span>Push to GitHub ✓ · 2 of 4 done today</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="what">
+      <p class="eyebrow">What it is</p>
+      <h2>A little creature that notices when you got something done.</h2>
+      <div class="grid grid--3">
+        <article class="card">
+          <h3>It peeks</h3>
+          <p>Peeko lives in the strip at the top of your screen. It looks at a few simple signals: which app is in front, whether you've touched the keyboard lately, and your public GitHub activity.</p>
+        </article>
+        <article class="card">
+          <h3>It ticks things off</h3>
+          <p>When a signal says you did the thing, the task goes green on its own. For things it can't see, like the gym or drinking water, you tap them yourself.</p>
+        </article>
+        <article class="card">
+          <h3>It cheers, it doesn't police</h3>
+          <p>These signals are hints, not proof. Leave a PDF open and nudge the mouse, and it'll count as reading. That's fine. Peeko is a nudge, not a lie detector.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="faces">
+      <p class="eyebrow">Three faces</p>
+      <h2>You can tell how your day is going from the eyes.</h2>
+      <p class="section__lede">Every task wears one of Peeko's faces, and the menu bar icon shows the face for the whole day.</p>
+      <div class="grid grid--3 faces">
+        <figure class="face-card">
+          <svg class="face face--96"><use href="#face-dozing"/></svg>
+          <figcaption><strong>Dozing</strong><span>Not started yet. No pressure.</span></figcaption>
+        </figure>
+        <figure class="face-card">
+          <svg class="face face--96"><use href="#face-looking"/></svg>
+          <figcaption><strong>Looking</strong><span>On it. Time is adding up, or Peeko is checking GitHub.</span></figcaption>
+        </figure>
+        <figure class="face-card">
+          <svg class="face face--96"><use href="#face-beaming"/></svg>
+          <figcaption><strong>Beaming</strong><span>Done. Peeko saw that.</span></figcaption>
+        </figure>
+      </div>
+      <ul class="swatches" aria-label="Colors">
+        <li><span style="background:var(--green)"></span>Peeko green</li>
+        <li><span style="background:var(--night);box-shadow:inset 0 0 0 1px var(--line)"></span>Night</li>
+        <li><span style="background:var(--blush)"></span>Blush</li>
+        <li><span style="background:var(--chalk)"></span>Chalk</li>
+      </ul>
+    </section>
+
+    <section class="section" id="examples">
+      <p class="eyebrow">Examples</p>
+      <h2>Things Peeko can tick off for you.</h2>
+      <div class="grid grid--3">
+        <article class="example">
+          <svg class="face face--40"><use href="#face-looking"/></svg>
+          <h3>Read for 30 minutes</h3>
+          <p>Counts active time while Preview is in front. Idle time doesn't count, and a sleeping Mac never adds hours.</p>
+          <span class="tag">time in an app</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-dozing"/></svg>
+          <h3>Deep work for 90 minutes</h3>
+          <p>Same idea, across VS Code and Terminal. Point it at any app you like, for as many minutes as you want.</p>
+          <span class="tag">time in an app</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-beaming"/></svg>
+          <h3>Push to GitHub</h3>
+          <p>Checks your public activity every 10 minutes for a push made today, in your own time zone.</p>
+          <span class="tag">online check</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-beaming"/></svg>
+          <h3>Gym, water, anything</h3>
+          <p>Some things only you know. Add your own and tap them when they're done.</p>
+          <span class="tag">tap it yourself</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-looking"/></svg>
+          <h3>Take a walk</h3>
+          <p>After an hour at the screen, Peeko suggests standing up for 5 minutes. Stepping away resets the count.</p>
+          <span class="tag">break reminder</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-dozing"/></svg>
+          <h3>Evening check-in</h3>
+          <p>At 9 PM, if something's left, one quiet note: "2 tasks left today." Change the time or turn it off.</p>
+          <span class="tag">reminder</span>
+        </article>
+      </div>
+
+      <div class="split">
+        <div>
+          <h3>Tasks are just data</h3>
+          <p>Every task is a type plus a few settings. Built-in presets live in a JSON file, and yours are saved the same way, so adding a new preset doesn't need any code.</p>
+        </div>
+        <pre class="code" aria-label="Example task definition"><code>{
+  <span class="k">"id"</span>: <span class="s">"read-pdfs"</span>,
+  <span class="k">"title"</span>: <span class="s">"Read for 30 minutes"</span>,
+  <span class="k">"type"</span>: <span class="s">"appTime"</span>,
+  <span class="k">"params"</span>: {
+    <span class="k">"bundleIDs"</span>: [<span class="s">"com.apple.Preview"</span>],
+    <span class="k">"minutes"</span>: <span class="n">30</span>,
+    <span class="k">"idleCutoffSeconds"</span>: <span class="n">120</span>
+  }
+}</code></pre>
+      </div>
+    </section>
+
+    <section class="section" id="privacy">
+      <p class="eyebrow">Privacy</p>
+      <h2>Everything stays on your Mac.</h2>
+      <div class="grid grid--3">
+        <article class="card"><h3>No account</h3><p>Nothing to sign up for. No server, no analytics, no telemetry.</p></article>
+        <article class="card"><h3>Plain files</h3><p>Your tasks and history are JSON in <code>~/Library/Application Support/Peeko/</code>. Read them, back them up, or delete them.</p></article>
+        <article class="card"><h3>One network call</h3><p>Only if you turn on the GitHub task: your public activity, every 10 minutes. No token, so private repos stay private.</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="install">
+      <p class="eyebrow">Install</p>
+      <h2>Paste one line into Terminal.</h2>
+      <div class="command command--big" role="group" aria-label="Install command">
+        <code id="install-cmd-2">curl -fsSL https://peeko.stack42.tech/install.sh | bash</code>
+        <button class="command__copy" type="button" data-copy="install-cmd-2">Copy</button>
+      </div>
+      <p class="section__lede">It downloads the latest release, checks its checksum, puts Peeko in Applications, and opens it. Run it again to update. <a href="install.sh">Read the script</a> first if you like; it's short.</p>
+
+      <div class="grid grid--2">
+        <article class="card">
+          <h3>Prefer the DMG?</h3>
+          <p>Download it from <a href="https://github.com/STACK-42/peeko/releases/latest">Releases</a> and drag Peeko into Applications. It isn't signed with an Apple Developer ID yet, so the first time:</p>
+          <ol>
+            <li>Open Peeko once and close the warning.</li>
+            <li>Go to <strong>System Settings → Privacy &amp; Security</strong>.</li>
+            <li>Click <strong>Open Anyway</strong> next to Peeko.</li>
+          </ol>
+        </article>
+        <article class="card">
+          <h3>Build it yourself</h3>
+          <p>All you need is Apple's Command Line Tools. No Xcode.</p>
+          <pre class="code code--small"><code>xcode-select --install
+git clone https://github.com/STACK-42/peeko.git
+cd peeko
+make install</code></pre>
+        </article>
+      </div>
+      <p class="requirements">Needs macOS 14 Sonoma or later on an Apple silicon Mac.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <svg class="face face--40"><use href="#face-beaming"/></svg>
+    <p>Peeko is free and MIT-licensed. Made by <a href="https://github.com/STACK-42">STACK-42</a>.</p>
+    <p><a href="https://github.com/STACK-42/peeko">GitHub</a> · <a href="https://github.com/STACK-42/peeko/releases">Releases</a> · <a href="https://github.com/STACK-42/peeko/blob/main/CHANGELOG.md">Changelog</a></p>
+  </footer>
+
+  <script src="main.js" defer></script>
+</body>
+</html>

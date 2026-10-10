@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Installs the latest Peeko release into /Applications.
-#   curl -fsSL https://raw.githubusercontent.com/STACK-42/peeko/main/install.sh | bash
+#   curl -fsSL https://peeko.stack42.tech/install.sh | bash
 # Pin a version with PEEKO_VERSION=0.1.0.
 set -euo pipefail
 
