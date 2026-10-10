@@ -4,6 +4,10 @@ All notable changes to Peeko are listed here. The format follows [Keep a Changel
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-10
+
+Peeko notices more: sleep, early mornings, writing, and a history of how your days went.
+
 ### Added
 
 - "Slept on time": passes when there's no keyboard or mouse activity between 00:30 and 05:00.

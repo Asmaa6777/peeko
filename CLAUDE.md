@@ -14,7 +14,7 @@ Peeko is a local-first macOS menu bar app (Swift 6, SwiftUI, SwiftPM, **no Xcode
 - `site/` is the website at https://peeko.stack42.tech (GitHub Pages via `.github/workflows/pages.yml`, which copies in `install.sh` and `docs/assets/` images). Preview with `make site` (port 8642). It mirrors the app's look; keep its copy and the README in sync.
 - `README.md` is public-facing. Keep it short, plain and human. Put dev details in `docs/`, not the README.
 
-**Status:** v0.1.0 (Phases 1–5, plus break reminders). Sparkle auto-updates are planned for v0.2; see the blueprint's roadmap (§9).
+**Status:** v0.2.0 (Phases 1–5, break reminders, sleep/wake/writing tasks, history and streaks, export). Next on the roadmap: Sparkle auto-updates, appLimit; see the blueprint (§9).
 
 **Naming:** the blueprint's working name was "Proof". Use **Peeko** everywhere (`PeekoCore`, `Peeko.app`, `com.a7med7x7.peeko`, `~/Library/Application Support/Peeko/`, `User-Agent: Peeko-App`, `Peeko-x.y.z.dmg`).
 
