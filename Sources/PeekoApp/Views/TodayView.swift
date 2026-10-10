@@ -38,7 +38,7 @@ private struct TaskRow: View {
     var body: some View {
         let status = model.status(for: task)
         let content = HStack(spacing: 12) {
-            FaceView(mood: Mood(status), width: 30)
+            FaceView(mood: mood(status), width: 30)
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.title)
                     .font(Theme.rowTitle)
@@ -67,10 +67,22 @@ private struct TaskRow: View {
         }
     }
 
+    /// A GitHub task that's still waiting is "checking", so Peeko looks rather than dozes.
+    private func mood(_ status: TaskStatus) -> Mood {
+        if task.type == .remoteCheck, !status.isDone, !model.githubUsername(for: task).isEmpty { return .looking }
+        return Mood(status)
+    }
+
     @ViewBuilder
     private func subtitle(_ status: TaskStatus) -> some View {
         if case let .done(at) = status {
-            Text("done · \(at.formatted(date: .omitted, time: .shortened))")
+            let time = at.formatted(date: .omitted, time: .shortened)
+            Text(task.type == .manual ? "done · \(time)" : "Peeko saw that! · \(time)")
+        } else if task.type == .remoteCheck {
+            let username = model.githubUsername(for: task)
+            Text(username.isEmpty ? "add your GitHub username in Settings" : "checking… · @\(username)")
+        } else if case .inProgress = status, let target = task.params.minutes {
+            Text("\(model.accumulatedMinutes(for: task)) of \(target) min · \(TaskDetail.appNames(task))")
         } else {
             Text(TaskDetail.describe(task))
         }
@@ -82,6 +94,15 @@ private struct TaskRow: View {
             Image(systemName: status.isDone ? "checkmark.circle.fill" : "circle")
                 .font(.system(size: 18))
                 .foregroundStyle(status.isDone ? Theme.green : Theme.muted)
+        } else if status.isDone {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 18))
+                .foregroundStyle(Theme.green)
+        } else if task.type == .appTime {
+            ProgressRing(progress: {
+                if case let .inProgress(p) = status { return p }
+                return 0
+            }())
         } else if !model.isSupported(task) {
             Text("auto · soon")
                 .font(Theme.mono(10))
@@ -90,5 +111,22 @@ private struct TaskRow: View {
                 .padding(.vertical, 3)
                 .background(Capsule().strokeBorder(Theme.muted.opacity(0.4)))
         }
+    }
+}
+
+private struct ProgressRing: View {
+    let progress: Double
+
+    var body: some View {
+        ZStack {
+            Circle().stroke(Theme.muted.opacity(0.3), lineWidth: 2.5)
+            Circle()
+                .trim(from: 0, to: min(max(progress, 0), 1))
+                .stroke(Theme.green, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+        }
+        .frame(width: 16, height: 16)
+        .padding(1)
+        .accessibilityLabel("\(Int(progress * 100)) percent")
     }
 }

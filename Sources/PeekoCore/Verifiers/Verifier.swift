@@ -27,10 +27,45 @@ public struct ManualVerifier: Verifier {
     }
 }
 
-/// Returns nil for types that have no verifier yet.
-public func makeVerifier(for definition: TaskDefinition) -> (any Verifier)? {
+/// What verifiers may need beyond the task itself.
+public struct VerifierEnvironment: Sendable {
+    public var githubUsername: String
+    public var github: GitHubEventsClient
+    public var calendar: Calendar
+
+    public init(githubUsername: String, github: GitHubEventsClient, calendar: Calendar) {
+        self.githubUsername = githubUsername
+        self.github = github
+        self.calendar = calendar
+    }
+}
+
+/// Whether a verifier exists for this task, without building one.
+public func isVerifiable(_ definition: TaskDefinition) -> Bool {
     switch definition.type {
-    case .manual: ManualVerifier(definition: definition)
-    case .appTime, .remoteCheck, .appLimit: nil
+    case .manual, .appTime: true
+    case .remoteCheck: definition.params.source == "githubPush"
+    case .appLimit: false
+    }
+}
+
+/// Returns nil for types that have no verifier yet.
+public func makeVerifier(for definition: TaskDefinition, environment: VerifierEnvironment) -> (any Verifier)? {
+    guard isVerifiable(definition) else { return nil }
+    switch definition.type {
+    case .manual:
+        return ManualVerifier(definition: definition)
+    case .appTime:
+        return AppTimeVerifier(definition: definition)
+    case .remoteCheck:
+        let own = definition.params.username ?? ""
+        return GitHubPushVerifier(
+            definition: definition,
+            username: own.isEmpty ? environment.githubUsername : own,
+            client: environment.github,
+            calendar: environment.calendar
+        )
+    case .appLimit:
+        return nil
     }
 }

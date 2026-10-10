@@ -53,6 +53,7 @@ struct CatalogView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 9)
                 .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.white.opacity(0.12)))
+                AppTimeForm()
             }
         }
     }
@@ -67,14 +68,7 @@ struct CatalogView: View {
     }
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title.uppercased())
-                .font(Theme.mono(10).weight(.medium))
-                .tracking(0.8)
-                .foregroundStyle(Theme.muted)
-                .padding(.leading, 4)
-            content()
-        }
+        PanelSection(title: title, content: content)
     }
 
     private func row<Trailing: View>(_ task: TaskDefinition, @ViewBuilder trailing: () -> Trailing) -> some View {

@@ -8,14 +8,18 @@ enum TaskDetail {
             return "tick it yourself"
         case .appTime, .appLimit:
             let minutes = task.params.minutes.map { "\($0) min" } ?? "time"
-            let apps = (task.params.bundleIDs ?? []).map(appName).joined(separator: " / ")
+            let apps = appNames(task)
             return apps.isEmpty ? minutes : "\(minutes) in \(apps)"
         case .remoteCheck:
             return task.params.source == "githubPush" ? "a public push today" : "remote check"
         }
     }
 
-    private static func appName(_ bundleID: String) -> String {
+    static func appNames(_ task: TaskDefinition) -> String {
+        (task.params.bundleIDs ?? []).map(appName).joined(separator: " / ")
+    }
+
+    static func appName(_ bundleID: String) -> String {
         if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
             return FileManager.default.displayName(atPath: url.path)
                 .replacingOccurrences(of: ".app", with: "")

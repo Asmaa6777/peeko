@@ -55,6 +55,16 @@ public struct TaskDefinition: Codable, Hashable, Identifiable, Sendable {
         )
     }
 
+    public static func customAppTime(bundleID: String, appName: String, minutes: Int) -> TaskDefinition {
+        TaskDefinition(
+            id: customIDPrefix + UUID().uuidString.lowercased(),
+            title: "\(minutes) min in \(appName)",
+            type: .appTime,
+            params: TaskParams(bundleIDs: [bundleID], minutes: minutes, idleCutoffSeconds: 120),
+            icon: "timer"
+        )
+    }
+
     public var isCustom: Bool { id.hasPrefix(Self.customIDPrefix) }
 }
 

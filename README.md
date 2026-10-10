@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/assets/icon.png" width="128" alt="Peeko app icon"></p>
+
 # peeko
 
 A small menu bar app for macOS that keeps your daily list and ticks things off by itself.
@@ -12,21 +14,31 @@ Early days. What works right now:
 
 - the menu bar icon and popover, with a **Today** list and a **Catalog** of presets
 - manual tasks, plus your own custom ones
+- tasks that count time in an app, like reading in Preview or deep work in your editor, including ones you set up yourself
+- a daily "did I push to GitHub?" check
+- a note when Peeko ticks something off for you, and an optional evening reminder if anything's left
+- launch at login
 - everything saved locally, with a fresh list each morning
 
-Not built yet:
+Not built yet: auto-updates. For now, new versions are on the Releases page.
 
-- tasks that count time in an app (reading, deep work). This is next.
-- the GitHub push check, notifications, and settings
-- a signed `.dmg` you can just download
+## Install
 
-There's no download yet. If you want to try it, build it from source.
+Once the first version is out, grab `Peeko-x.y.z.dmg` from [Releases](https://github.com/STACK-42/peeko/releases), open it, and drag Peeko into Applications.
+
+Peeko isn't signed with an Apple Developer ID yet, so macOS will block it the first time you open it. To let it through:
+
+1. Open Peeko once and close the warning.
+2. Go to **System Settings → Privacy & Security** and scroll down.
+3. Click **Open Anyway** next to the Peeko message, then confirm.
+
+You only have to do this once. Building from source (below) skips it entirely.
 
 ## Privacy
 
 There are no accounts, servers, or analytics. Your tasks and history are plain JSON files in `~/Library/Application Support/Peeko/`, so you can read them, back them up, or delete them whenever you like.
 
-Once the GitHub task exists, it will call GitHub's public API with the username you give it. That's the only network request Peeko makes, and only if you turn that task on.
+If you turn on the GitHub task, Peeko asks GitHub's public API for your public activity every 10 minutes, using the username you gave it. That's the only network request it makes. No token, so private repos don't count.
 
 ## How it decides you did something
 
@@ -53,5 +65,10 @@ That builds `build/Peeko.app` and opens it. Look for the eyes in your menu bar. 
 
 - [Development setup](docs/development.md): toolchain, commands, and quirks
 - [Architecture](docs/architecture.md): how the pieces fit together
+- [Releasing](docs/releasing.md): packaging, versions, and signing
 - [Blueprint](docs/blueprint.md): the original plan and roadmap
 - [Brand](docs/brand/): the Peeko character, colors, and faces
+
+## License
+
+MIT. See [LICENSE](LICENSE).

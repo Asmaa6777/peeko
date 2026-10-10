@@ -1,6 +1,9 @@
+import AppKit
 import Foundation
 import Observation
 import PeekoCore
+import ServiceManagement
+import UserNotifications
 
 enum Mood {
     case dozing, looking, beaming
@@ -18,33 +21,55 @@ enum Mood {
 @Observable
 final class AppModel {
     let presets: [TaskDefinition]
+    let scheduler: Scheduler
     private let store: Store
+    private let notifier = Notifier()
     private(set) var taskList: TaskList
-    private(set) var record: DayRecord
-    private(set) var lastError: String?
+    private(set) var settings: AppSettings
+    private(set) var notificationStatus: UNAuthorizationStatus = .notDetermined
+    private(set) var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
+    private var localError: String?
+
+    private static let lastNudgeDayKey = "lastNudgeDay"
 
     init(store: Store = Store(directory: Store.defaultDirectory), bundle: Bundle = .main) {
         self.store = store
         self.presets = Self.loadPresets(from: bundle)
         self.taskList = store.loadTaskList()
-        self.record = store.loadDay(DayKey.string(for: .now))
-
-        _ = NotificationCenter.default.addObserver(
-            forName: .NSCalendarDayChanged, object: nil, queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.rolloverIfNeeded() }
-        }
+        self.settings = store.loadSettings()
+        self.scheduler = Scheduler(
+            store: store,
+            frontmost: SystemFrontmostAppProvider(),
+            idle: SystemIdleTimeProvider(),
+            github: GitHubEventsClient(http: URLSessionHTTPClient())
+        )
+        scheduler.tasks = taskList.tasks
+        scheduler.githubUsername = settings.githubUsername
+        scheduler.onAutoComplete = { [weak self] task in self?.notifyCompleted(task) }
+        scheduler.onTick = { [weak self] now in self?.nudgeIfDue(now: now) }
+        scheduler.start()
+        Task { await refreshSystemStatus() }
     }
 
     var tasks: [TaskDefinition] { taskList.tasks }
     var customTasks: [TaskDefinition] { tasks.filter(\.isCustom) }
+    var lastError: String? { localError ?? scheduler.lastSaveError }
 
     func status(for task: TaskDefinition) -> TaskStatus {
-        record.statuses[task.id] ?? .pending
+        scheduler.record.statuses[task.id] ?? .pending
     }
 
-    func isAutomatic(_ task: TaskDefinition) -> Bool { task.type != .manual }
-    func isSupported(_ task: TaskDefinition) -> Bool { makeVerifier(for: task) != nil }
+    func accumulatedMinutes(for task: TaskDefinition) -> Int {
+        Int((scheduler.record.accumulatedSeconds[task.id] ?? 0) / 60)
+    }
+
+    func isSupported(_ task: TaskDefinition) -> Bool { isVerifiable(task) }
+
+    /// The username a GitHub task will check, or "" if none is set.
+    func githubUsername(for task: TaskDefinition) -> String {
+        let own = task.params.username ?? ""
+        return own.isEmpty ? settings.githubUsername : own
+    }
 
     var doneCount: Int { tasks.filter { status(for: $0).isDone }.count }
 
@@ -80,32 +105,111 @@ final class AppModel {
         saveTaskList()
     }
 
+    func addCustomAppTimeTask(bundleID: String, appName: String, minutes: Int) {
+        guard minutes > 0 else { return }
+        taskList.tasks.append(.customAppTime(bundleID: bundleID, appName: appName, minutes: minutes))
+        saveTaskList()
+    }
+
     func remove(_ task: TaskDefinition) {
         taskList.tasks.removeAll { $0.id == task.id }
-        record.statuses[task.id] = nil
         saveTaskList()
-        saveRecord()
+        scheduler.forget(taskID: task.id)
     }
 
     func toggleManual(_ task: TaskDefinition) {
-        guard task.type == .manual else { return }
-        rolloverIfNeeded()
-        record.statuses[task.id] = status(for: task).isDone ? nil : .done(at: .now)
-        saveRecord()
+        scheduler.setManual(!status(for: task).isDone, for: task)
     }
 
-    func rolloverIfNeeded(now: Date = .now) {
-        let key = DayKey.string(for: now)
-        guard key != record.day else { return }
-        record = store.loadDay(key)
+    func rolloverIfNeeded() {
+        scheduler.rolloverIfNeeded(now: .now)
+    }
+
+    // MARK: Settings
+
+    func updateSettings(_ change: (inout AppSettings) -> Void) {
+        var next = settings
+        change(&next)
+        guard next != settings else { return }
+        let usernameChanged = next.githubUsername != settings.githubUsername
+        settings = next
+        do {
+            try store.save(settings)
+            localError = nil
+        } catch {
+            localError = "Couldn't save settings: \(error.localizedDescription)"
+        }
+        if usernameChanged {
+            scheduler.githubUsername = settings.githubUsername
+            Task { await scheduler.refresh() }
+        }
+    }
+
+    func refreshSystemStatus() async {
+        notificationStatus = await notifier.authorizationStatus()
+        launchAtLoginStatus = SMAppService.mainApp.status
+    }
+
+    func requestNotifications() async {
+        _ = await notifier.requestAuthorization()
+        await refreshSystemStatus()
+    }
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+            localError = nil
+        } catch {
+            localError = "Couldn't change launch at login: \(error.localizedDescription)"
+        }
+        launchAtLoginStatus = SMAppService.mainApp.status
+    }
+
+    func revealDataFolder() {
+        try? FileManager.default.createDirectory(at: store.directory, withIntermediateDirectories: true)
+        NSWorkspace.shared.activateFileViewerSelecting([store.directory])
+    }
+
+    // MARK: Notifications
+
+    private func notifyCompleted(_ task: TaskDefinition) {
+        notifier.post(
+            id: "done-\(scheduler.record.day)-\(task.id)",
+            title: "Peeko saw that!",
+            body: "\(task.title) ✓  ·  \(doneCount) of \(tasks.count) done today"
+        )
+    }
+
+    private func nudgeIfDue(now: Date) {
+        let defaults = UserDefaults.standard
+        let remaining = tasks.count - doneCount
+        guard EveningNudge.isDue(
+            now: now,
+            settings: settings,
+            lastNudgeDay: defaults.string(forKey: Self.lastNudgeDayKey),
+            remaining: remaining
+        ) else { return }
+        defaults.set(DayKey.string(for: now), forKey: Self.lastNudgeDayKey)
+        notifier.post(
+            id: "nudge-\(DayKey.string(for: now))",
+            title: "Peeko's still peeking",
+            body: remaining == 1 ? "1 task left today." : "\(remaining) tasks left today."
+        )
     }
 
     private func saveTaskList() {
-        do { try store.save(taskList); lastError = nil } catch { lastError = "Couldn't save tasks: \(error.localizedDescription)" }
-    }
-
-    private func saveRecord() {
-        do { try store.save(record); lastError = nil } catch { lastError = "Couldn't save today: \(error.localizedDescription)" }
+        scheduler.tasks = taskList.tasks
+        Task { await scheduler.refresh() }
+        do {
+            try store.save(taskList)
+            localError = nil
+        } catch {
+            localError = "Couldn't save tasks: \(error.localizedDescription)"
+        }
     }
 
     private static func loadPresets(from bundle: Bundle) -> [TaskDefinition] {

@@ -17,6 +17,7 @@ Install the tools with `xcode-select --install`, and check them with `swift --ve
 |---|---|
 | `make run` | Builds, bundles and signs the app, quits any running copy, and opens `build/Peeko.app` |
 | `make app` | Builds, bundles and signs without launching |
+| `make check` | Runs the logic checks in `Checks/` (stand-in for unit tests, see below) |
 | `make clean` | Deletes `.build/` and `build/` |
 | `swift build` | Quick debug compile, useful to catch errors |
 
@@ -35,6 +36,7 @@ The app reads and writes the same folder whether it's a dev build or a release:
 ```
 ~/Library/Application Support/Peeko/
 ├── tasks.json            # enabled tasks and their params
+├── settings.json         # GitHub username, evening reminder, onboarding done
 └── days/2026-10-10.json  # one file per day: statuses and accumulated seconds
 ```
 
@@ -45,8 +47,18 @@ If a file won't decode, the app renames it to `*.corrupt-<timestamp>` and starts
 ## Toolchain quirks
 
 - **Use `@ViewState`, not `@State`.** In the macOS 27 SDK, `@State` is a macro whose plugin ships only with Xcode, so it fails to compile with Command Line Tools. `Sources/PeekoApp/ViewState.swift` aliases the plain property wrapper. `@Observable` is fine because its plugin ships with the toolchain.
-- **No `swift test` yet.** Both XCTest and Swift Testing need macro plugins or frameworks from Xcode. Logic in `PeekoCore` is checked through a small executable instead. GitHub Actions runners do have Xcode, so the release workflow can run real tests.
+- **No `swift test`.** Both XCTest and Swift Testing need macro plugins or frameworks from Xcode. Instead, `Checks/main.swift` is a small executable target (`PeekoChecks`) that drives `PeekoCore` with fake providers and prints ✓/✗. `make check` exits non-zero if anything fails. Add new cases there. If Xcode becomes available, these port directly to a test target.
 - **`ld: warning: search path ... not found`** shows up during linking. It's harmless.
+
+## Network and firewalls
+
+The GitHub check is the only network call. If you run an outbound firewall like LuLu, it blocks new binaries until you allow them, including a freshly built `Peeko.app` or a scratch test executable. Symptom: URLSession times out while `curl` to the same URL works. Allow Peeko in the firewall.
+
+To see what GitHub returns for a user:
+
+```sh
+curl -sI -H 'User-Agent: Peeko-App' https://api.github.com/users/<name>/events/public
+```
 
 ## Seeing the app
 

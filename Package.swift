@@ -11,5 +11,7 @@ let package = Package(
     targets: [
         .target(name: "PeekoCore"),
         .executableTarget(name: "PeekoApp", dependencies: ["PeekoCore"]),
+        // Stand-in for a test target: XCTest and Swift Testing need Xcode, not Command Line Tools.
+        .executableTarget(name: "PeekoChecks", dependencies: ["PeekoCore"], path: "Checks"),
     ]
 )

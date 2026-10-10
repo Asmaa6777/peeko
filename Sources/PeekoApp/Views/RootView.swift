@@ -4,6 +4,7 @@ import SwiftUI
 enum Tab: String, CaseIterable {
     case today = "Today"
     case catalog = "Catalog"
+    case settings = "Settings"
 }
 
 struct RootView: View {
@@ -13,7 +14,10 @@ struct RootView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
+            // Kept in the layout during onboarding so the panel height never changes.
             tabBar
+                .opacity(model.settings.hasCompletedOnboarding ? 1 : 0)
+                .allowsHitTesting(model.settings.hasCompletedOnboarding)
             if let error = model.lastError {
                 Text(error)
                     .font(Theme.mono())
@@ -22,15 +26,22 @@ struct RootView: View {
                     .padding(.bottom, 8)
             }
             // Fixed height: a MenuBarExtra window that resizes on tab switch drifts away from the menu bar.
-            ScrollView {
-                Group {
-                    switch tab {
-                    case .today: TodayView(tab: $tab)
-                    case .catalog: CatalogView()
+            Group {
+                if model.settings.hasCompletedOnboarding {
+                    ScrollView {
+                        Group {
+                            switch tab {
+                            case .today: TodayView(tab: $tab)
+                            case .catalog: CatalogView()
+                            case .settings: SettingsView()
+                            }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
                     }
+                } else {
+                    OnboardingView()
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
             }
             .frame(height: Theme.contentHeight)
             footer
@@ -39,7 +50,10 @@ struct RootView: View {
         .background(Theme.night)
         .foregroundStyle(Theme.chalk)
         .environment(\.colorScheme, .dark)
-        .onAppear { model.rolloverIfNeeded() }
+        .onAppear {
+            model.rolloverIfNeeded()
+            Task { await model.refreshSystemStatus() }
+        }
     }
 
     private var header: some View {

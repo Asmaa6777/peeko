@@ -13,6 +13,7 @@ public struct Store: Sendable {
     }
 
     var tasksURL: URL { directory.appendingPathComponent("tasks.json") }
+    var settingsURL: URL { directory.appendingPathComponent("settings.json") }
     var daysDirectory: URL { directory.appendingPathComponent("days", isDirectory: true) }
 
     func dayURL(_ key: String) -> URL {
@@ -25,6 +26,14 @@ public struct Store: Sendable {
 
     public func save(_ list: TaskList) throws {
         try write(list, to: tasksURL)
+    }
+
+    public func loadSettings() -> AppSettings {
+        load(AppSettings.self, from: settingsURL) ?? AppSettings()
+    }
+
+    public func save(_ settings: AppSettings) throws {
+        try write(settings, to: settingsURL)
     }
 
     public func loadDay(_ key: String) -> DayRecord {
