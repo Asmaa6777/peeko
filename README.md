@@ -42,7 +42,7 @@ These are proxies, not proof. Leave a PDF open and nudge the mouse now and then,
 You need macOS 14 or later on an Apple silicon Mac, and Apple's Command Line Tools (`xcode-select --install`). You don't need Xcode.
 
 ```sh
-git clone <this repo>
+git clone https://github.com/STACK-42/peeko.git
 cd peeko
 make run
 ```
