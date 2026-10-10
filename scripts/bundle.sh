@@ -11,5 +11,11 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/PeekoApp" "$APP/Contents/MacOS/Peeko"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 cp Resources/catalog.json "$APP/Contents/Resources/"
+cp Resources/AppIcon.icns "$APP/Contents/Resources/"
+
+# CI passes its run number so every build gets a higher CFBundleVersion.
+if [[ -n "${BUILD_NUMBER:-}" ]]; then
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$APP/Contents/Info.plist"
+fi
 
 echo "Bundled $APP"
