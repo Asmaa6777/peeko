@@ -76,8 +76,11 @@ private struct TaskRow: View {
     @ViewBuilder
     private func subtitle(_ status: TaskStatus) -> some View {
         if case let .done(at) = status {
-            let time = at.formatted(date: .omitted, time: .shortened)
-            Text(task.type == .manual ? "done · \(time)" : "Peeko saw that! · \(time)")
+            Text(TaskDetail.done(task, at: at))
+        } else if case .failed = status {
+            Text(TaskDetail.missed(task))
+        } else if task.type == .folderActivity, case let .inProgress(p) = status, let target = task.params.minWords {
+            Text("\(Int((p * Double(target)).rounded())) of \(target) words · \(TaskDetail.folderName(task) ?? "notes")")
         } else if task.type == .remoteCheck {
             let username = model.githubUsername(for: task)
             Text(username.isEmpty ? "add your GitHub username in Settings" : "checking… · @\(username)")
@@ -98,7 +101,7 @@ private struct TaskRow: View {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 18))
                 .foregroundStyle(Theme.green)
-        } else if task.type == .appTime {
+        } else if task.type == .appTime || (task.type == .folderActivity && (task.params.minWords ?? 0) > 0) {
             ProgressRing(progress: {
                 if case let .inProgress(p) = status { return p }
                 return 0

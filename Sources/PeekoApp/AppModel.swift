@@ -78,8 +78,18 @@ final class AppModel {
 
     var doneCount: Int { tasks.filter { status(for: $0).isDone }.count }
 
+    /// Tasks that can still happen today (not done, not already missed).
+    var openCount: Int {
+        tasks.filter {
+            switch status(for: $0) {
+            case .done, .failed: false
+            case .pending, .inProgress: true
+            }
+        }.count
+    }
+
     var mood: Mood {
-        if !tasks.isEmpty && doneCount == tasks.count { return .beaming }
+        if doneCount > 0 && openCount == 0 { return .beaming }
         let anyProgress = tasks.contains {
             switch status(for: $0) {
             case .done, .inProgress: true
@@ -91,6 +101,23 @@ final class AppModel {
 
     func isEnabled(_ preset: TaskDefinition) -> Bool {
         tasks.contains { $0.id == preset.id }
+    }
+
+    func needsFolder(_ preset: TaskDefinition) -> Bool {
+        preset.type == .folderActivity && (preset.params.path ?? "").isEmpty
+    }
+
+    /// The enabled copy carries user choices (like the folder), so show that one when it exists.
+    func enabledCopy(of preset: TaskDefinition) -> TaskDefinition? {
+        tasks.first { $0.id == preset.id }
+    }
+
+    func enable(_ preset: TaskDefinition, folder: URL) {
+        guard !isEnabled(preset) else { return }
+        var task = preset
+        task.params.path = folder.path
+        taskList.tasks.append(task)
+        saveTaskList()
     }
 
     func setEnabled(_ preset: TaskDefinition, _ enabled: Bool) {
@@ -191,7 +218,7 @@ final class AppModel {
 
     private func nudgeIfDue(now: Date) {
         let defaults = UserDefaults.standard
-        let remaining = tasks.count - doneCount
+        let remaining = openCount
         guard EveningNudge.isDue(
             now: now,
             settings: settings,

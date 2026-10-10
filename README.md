@@ -16,6 +16,8 @@ Early days. What works right now:
 - manual tasks, plus your own custom ones
 - tasks that count time in an app, like reading in Preview or deep work in your editor, including ones you set up yourself
 - a daily "did I push to GitHub?" check
+- "slept on time" (no screen time between 00:30 and 05:00) and "up before 8" (first on the Mac before 8 AM)
+- "write in your notes" and "write 300 words", watching a notes folder or Obsidian vault you pick
 - a note when Peeko ticks something off for you, and an optional evening reminder if anything's left
 - a gentle nudge to get up and walk for 5 minutes after every hour at the screen (stepping away for 5 minutes resets it)
 - launch at login
@@ -55,6 +57,8 @@ Peeko only looks at a couple of simple signals:
 
 - **Time in an app:** which app is in front, and whether you've touched the keyboard or mouse in the last couple of minutes. If both hold, the minute counts.
 - **GitHub:** whether your public activity shows a push made today, in your own time zone.
+- **When you're at the Mac:** the stretches of keyboard and mouse activity, used for the sleep and early-morning tasks. It only sees the Mac, not your phone in bed.
+- **Your notes folder:** which `.md` and `.txt` files changed today and how many words were added. Only the folder you pick, and nothing leaves your Mac.
 
 These are proxies, not proof. Leave a PDF open and nudge the mouse now and then, and it will count as reading. That's fine. The point is a nudge, not a lie detector.
 

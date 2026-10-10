@@ -14,10 +14,16 @@ struct CatalogView: View {
                         .foregroundStyle(Theme.muted)
                 }
                 ForEach(model.presets) { preset in
-                    row(preset) {
+                    row(model.enabledCopy(of: preset) ?? preset) {
                         Toggle("", isOn: Binding(
                             get: { model.isEnabled(preset) },
-                            set: { model.setEnabled(preset, $0) }
+                            set: { on in
+                                if on && model.needsFolder(preset) {
+                                    if let folder = PickedFolder.choose() { model.enable(preset, folder: folder) }
+                                } else {
+                                    model.setEnabled(preset, on)
+                                }
+                            }
                         ))
                         .toggleStyle(.switch)
                         .tint(Theme.green)

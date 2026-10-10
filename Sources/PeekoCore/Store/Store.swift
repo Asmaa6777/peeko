@@ -15,6 +15,7 @@ public struct Store: Sendable {
     var tasksURL: URL { directory.appendingPathComponent("tasks.json") }
     var settingsURL: URL { directory.appendingPathComponent("settings.json") }
     var daysDirectory: URL { directory.appendingPathComponent("days", isDirectory: true) }
+    var wordsDirectory: URL { directory.appendingPathComponent("words", isDirectory: true) }
 
     func dayURL(_ key: String) -> URL {
         daysDirectory.appendingPathComponent("\(key).json")
@@ -42,6 +43,14 @@ public struct Store: Sendable {
 
     public func save(_ record: DayRecord) throws {
         try write(record, to: dayURL(record.day))
+    }
+
+    public func loadWordBaselines(_ day: String) -> WordBaselines {
+        load(WordBaselines.self, from: wordsDirectory.appendingPathComponent("\(day).json")) ?? WordBaselines(day: day)
+    }
+
+    public func save(_ baselines: WordBaselines) throws {
+        try write(baselines, to: wordsDirectory.appendingPathComponent("\(baselines.day).json"))
     }
 
     private func load<T: Decodable>(_ type: T.Type, from url: URL) -> T? {

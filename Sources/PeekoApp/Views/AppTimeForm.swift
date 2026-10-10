@@ -86,3 +86,17 @@ struct PickedApp: Identifiable, Hashable {
         return PickedApp(bundleID: id, name: TaskDetail.appName(id))
     }
 }
+
+enum PickedFolder {
+    @MainActor
+    static func choose() -> URL? {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Watch this folder"
+        panel.message = "Pick your notes folder or Obsidian vault. Peeko only reads .md and .txt files in it."
+        NSApp.activate()
+        return panel.runModal() == .OK ? panel.url : nil
+    }
+}

@@ -38,7 +38,8 @@ The app reads and writes the same folder whether it's a dev build or a release:
 ~/Library/Application Support/Peeko/
 ├── tasks.json            # enabled tasks and their params
 ├── settings.json         # GitHub username, evening reminder, onboarding done
-└── days/2026-10-10.json  # one file per day: statuses and accumulated seconds
+├── days/2026-10-10.json  # one file per day: statuses, accumulated seconds, activity stretches
+└── words/2026-10-10.json # starting word counts for notes-folder tasks
 ```
 
 To start fresh, quit Peeko and run `rm -rf ~/Library/Application\ Support/Peeko`.
@@ -60,6 +61,22 @@ To see what GitHub returns for a user:
 ```sh
 curl -sI -H 'User-Agent: Peeko-App' https://api.github.com/users/<name>/events/public
 ```
+
+## Logs and notifications
+
+Peeko logs under the subsystem `com.a7med7x7.peeko` (category `notifications` for permission and posting). Use the full path, because in zsh `log` is a built-in shell command:
+
+```sh
+/usr/bin/log show --last 10m --info --style compact --predicate 'subsystem == "com.a7med7x7.peeko"'
+```
+
+If a notification "didn't show up", check whether macOS held it back:
+
+```sh
+/usr/bin/log show --last 30m --style compact --predicate 'process == "NotificationCenter"' | grep a7med7x7
+```
+
+`muted by DND suppression` means a Focus was on. The notification is in Notification Center, and Peeko can be added to that Focus's allowed apps.
 
 ## Seeing the app
 

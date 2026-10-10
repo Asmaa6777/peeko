@@ -4,6 +4,13 @@ All notable changes to Peeko are listed here. The format follows [Keep a Changel
 
 ## [Unreleased]
 
+### Added
+
+- "Slept on time": passes when there's no keyboard or mouse activity between 00:30 and 05:00.
+- "Up before 8": passes when your first stretch of activity after 04:00 starts before 08:00.
+- "Write in your notes" and "Write 300 words": pick a notes folder or Obsidian vault, and Peeko ticks these when a note changes today or when you've added enough words.
+- Days now record when you were active (stretches of keyboard and mouse use), stored in the day file.
+
 ## [0.1.0] - 2026-10-10
 
 First release.

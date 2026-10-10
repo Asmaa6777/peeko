@@ -237,7 +237,7 @@ do {
                               params: TaskParams(source: "githubPush", username: ""), icon: "arrow.up.circle")
     func verdict(_ events: [(String, String)], now: Date, username: String = "octocat") async -> TaskStatus {
         let client = GitHubEventsClient(http: FakeHTTP([.init(status: 200, body: eventsJSON(events), etag: nil)]))
-        let env = VerifierEnvironment(githubUsername: username, github: client, calendar: calendar)
+        let env = VerifierEnvironment(githubUsername: username, github: client, folders: FolderScanner(store: tempStore()), calendar: calendar)
         return await makeVerifier(for: push, environment: env)!.evaluate(context: .init(now: now, record: DayRecord(day: "x")))
     }
 
@@ -316,6 +316,121 @@ do {
 
     check(BreakMessages.all(minutes: 60).allSatisfy { $0.body.contains("5 minutes") }, "every message asks for 5 minutes")
     check(BreakMessages.duration(minutes: 60) == "an hour" && BreakMessages.duration(minutes: 90) == "90 minutes", "duration wording")
+}
+
+// MARK: - Activity windows (sleep, wake)
+
+group("ActivityLog")
+do {
+    var spans: [ActivitySpan] = []
+    let dayStart = at(10, 0, 0)
+    check(ActivityLog.note(at(10, 7, 0), in: &spans, notBefore: dayStart), "first input starts a span")
+    check(!ActivityLog.note(at(10, 7, 4), in: &spans, notBefore: dayStart), "input within 5 minutes extends it")
+    check(spans == [ActivitySpan(start: at(10, 7, 0), end: at(10, 7, 4))], "span covers 07:00–07:04")
+    check(ActivityLog.note(at(10, 7, 10), in: &spans, notBefore: dayStart), "a gap over 5 minutes starts a new span")
+    var late: [ActivitySpan] = []
+    ActivityLog.note(at(9, 23, 59, 50), in: &late, notBefore: dayStart)
+    check(late.first?.start == dayStart, "input from before midnight is clamped to the new day")
+}
+
+@MainActor func windowTask(_ rule: String, _ from: String, _ until: String) -> TaskDefinition {
+    TaskDefinition(id: rule, title: rule, type: .activity, params: TaskParams(rule: rule, from: from, until: until), icon: "moon")
+}
+@MainActor func judge(_ task: TaskDefinition, spans: [ActivitySpan], now: Date) async -> TaskStatus {
+    var record = DayRecord(day: "2026-10-11")
+    record.activity = spans
+    let env = VerifierEnvironment(githubUsername: "", github: offlineGitHub(), folders: FolderScanner(store: tempStore()), calendar: calendar)
+    return await makeVerifier(for: task, environment: env)!.evaluate(context: .init(now: now, record: record))
+}
+
+group("Activity window: slept on time (quiet 00:30–05:00)")
+do {
+    let sleep = windowTask("quietBetween", "00:30", "05:00")
+    let evening = [ActivitySpan(start: at(11, 0, 0), end: at(11, 0, 20))]
+    check(await judge(sleep, spans: evening, now: at(11, 3, 0)) == .pending, "still pending during the night")
+    check(await judge(sleep, spans: evening, now: at(11, 7, 0)) == .done(at: at(11, 5, 0)), "done once 05:00 passes quietly")
+    check(await judge(sleep, spans: [], now: at(11, 7, 0)) == .done(at: at(11, 5, 0)), "a Mac that slept all night counts")
+    let lateNight = [ActivitySpan(start: at(11, 0, 10), end: at(11, 1, 15))]
+    check(await judge(sleep, spans: lateNight, now: at(11, 7, 0)) == .failed, "activity at 01:15 means a late night")
+    check(isVerifiable(sleep) && !isVerifiable(windowTask("nope", "00:00", "01:00")), "only known rules are verifiable")
+}
+
+group("Activity window: up early (start 04:00–08:00)")
+do {
+    let wake = windowTask("startBetween", "04:00", "08:00")
+    let morning = [ActivitySpan(start: at(11, 0, 5), end: at(11, 0, 40)), ActivitySpan(start: at(11, 7, 12), end: at(11, 9, 0))]
+    check(await judge(wake, spans: morning, now: at(11, 9, 0)) == .done(at: at(11, 7, 12)), "first stretch at 07:12 → up early")
+    let allNighter = [ActivitySpan(start: at(11, 3, 0), end: at(11, 8, 30))]
+    check(await judge(wake, spans: allNighter, now: at(11, 9, 0)) == .failed, "an all-nighter that started at 03:00 isn't an early start")
+    check(await judge(wake, spans: [], now: at(11, 6, 0)) == .pending, "pending before 08:00")
+    let slow = [ActivitySpan(start: at(11, 9, 30), end: at(11, 10, 0))]
+    check(await judge(wake, spans: slow, now: at(11, 10, 0)) == .failed, "first on at 09:30 → a slow morning")
+}
+
+group("Scheduler records activity spans")
+do {
+    let store = tempStore()
+    let idle = FakeIdle(3)
+    let scheduler = Scheduler(store: store, frontmost: FakeFrontmost(nil), idle: idle, github: offlineGitHub(), calendar: calendar, now: at(10, 7, 0))
+    for i in 0..<30 { await scheduler.tick(now: at(10, 7, 0).addingTimeInterval(Double(i) * 10)) }
+    idle.seconds = 600
+    await scheduler.tick(now: at(10, 7, 10))
+    idle.seconds = 2
+    await scheduler.tick(now: at(10, 9, 0))
+    let spans = scheduler.record.activity ?? []
+    check(spans.count == 2, "two stretches with a long idle gap between them")
+    check(spans.first?.start == at(10, 7, 0).addingTimeInterval(-3), "a span starts at the last input, not the tick")
+    check(store.loadDay("2026-10-10").activity?.count == 2, "spans are saved to the day file")
+}
+
+// MARK: - Notes folder
+
+group("FolderScanner and FolderActivityVerifier")
+do {
+    let fm = FileManager.default
+    let vault = fm.temporaryDirectory.appendingPathComponent("peeko-vault-\(UUID())")
+    try! fm.createDirectory(at: vault.appendingPathComponent(".obsidian"), withIntermediateDirectories: true)
+    try! fm.createDirectory(at: vault.appendingPathComponent("daily"), withIntermediateDirectories: true)
+    var created: [String: Date] = [:]
+    func write(_ path: String, words: Int, modified: Date) {
+        let url = vault.appendingPathComponent(path)
+        try! Array(repeating: "word", count: words).joined(separator: " ").write(to: url, atomically: true, encoding: .utf8)
+        if created[path] == nil { created[path] = modified }
+        try! fm.setAttributes([.modificationDate: modified, .creationDate: created[path]!], ofItemAtPath: url.path)
+    }
+    write("old.md", words: 500, modified: at(9, 20, 0))
+    write("daily/today.md", words: 100, modified: at(9, 22, 0))
+    write(".obsidian/workspace.md", words: 999, modified: at(10, 9, 0))
+    write("image.png", words: 50, modified: at(10, 9, 0))
+
+    let store = tempStore()
+    let scanner = FolderScanner(store: store)
+    let any = TaskDefinition(id: "notes", title: "Notes", type: .folderActivity, params: TaskParams(path: vault.path), icon: "pencil")
+    let words = TaskDefinition(id: "words", title: "300 words", type: .folderActivity, params: TaskParams(path: vault.path, minWords: 300), icon: "pencil")
+    func status(_ task: TaskDefinition, _ now: Date, scanner: FolderScanner) async -> TaskStatus {
+        let env = VerifierEnvironment(githubUsername: "", github: offlineGitHub(), folders: scanner, calendar: calendar)
+        return await makeVerifier(for: task, environment: env)!.evaluate(context: .init(now: now, record: DayRecord(day: "2026-10-10")))
+    }
+
+    check(await status(any, at(10, 9, 0), scanner: scanner) == .pending, "nothing edited today yet (hidden folders and non-notes ignored)")
+    check(await status(words, at(10, 9, 0), scanner: scanner) == .pending, "first scan sets the baseline")
+
+    write("daily/today.md", words: 220, modified: at(10, 9, 30))
+    check(await status(any, at(10, 9, 0, 30), scanner: scanner) == .pending, "rescans at most once a minute")
+    check(await status(any, at(10, 9, 31), scanner: scanner) == .done(at: at(10, 9, 30)), "any edit today ticks 'write in your notes'")
+
+    let progress = await status(words, at(10, 9, 31), scanner: scanner)
+    check(progress == .inProgress(progress: 120.0 / 300.0), "120 words added → 40% of 300")
+
+    write("new-idea.md", words: 200, modified: at(10, 10, 0))
+    let restarted = FolderScanner(store: store)
+    _ = await status(words, at(10, 10, 1), scanner: restarted)
+    check(await status(words, at(10, 10, 5), scanner: restarted) == .done(at: at(10, 10, 5)),
+          "after a restart: the saved baseline holds, and a note created today counts in full (120 + 200 ≥ 300)")
+
+    let missing = TaskDefinition(id: "m", title: "m", type: .folderActivity, params: TaskParams(path: "/nope/\(UUID())"), icon: "pencil")
+    check(await status(missing, at(10, 10, 0), scanner: scanner) == .pending, "a missing folder stays pending")
+    try? fm.removeItem(at: vault)
 }
 
 // MARK: - Settings and the evening nudge

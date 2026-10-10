@@ -31,11 +31,13 @@ public struct ManualVerifier: Verifier {
 public struct VerifierEnvironment: Sendable {
     public var githubUsername: String
     public var github: GitHubEventsClient
+    public var folders: FolderScanner
     public var calendar: Calendar
 
-    public init(githubUsername: String, github: GitHubEventsClient, calendar: Calendar) {
+    public init(githubUsername: String, github: GitHubEventsClient, folders: FolderScanner, calendar: Calendar) {
         self.githubUsername = githubUsername
         self.github = github
+        self.folders = folders
         self.calendar = calendar
     }
 }
@@ -45,6 +47,8 @@ public func isVerifiable(_ definition: TaskDefinition) -> Bool {
     switch definition.type {
     case .manual, .appTime: true
     case .remoteCheck: definition.params.source == "githubPush"
+    case .activity: ActivityWindowVerifier.rules.contains(definition.params.rule ?? "")
+    case .folderActivity: true
     case .appLimit: false
     }
 }
@@ -65,6 +69,10 @@ public func makeVerifier(for definition: TaskDefinition, environment: VerifierEn
             client: environment.github,
             calendar: environment.calendar
         )
+    case .activity:
+        return ActivityWindowVerifier(definition: definition, calendar: environment.calendar)
+    case .folderActivity:
+        return FolderActivityVerifier(definition: definition, scanner: environment.folders, calendar: environment.calendar)
     case .appLimit:
         return nil
     }

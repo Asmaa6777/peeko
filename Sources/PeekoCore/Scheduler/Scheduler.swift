@@ -22,6 +22,8 @@ public final class Scheduler {
     @ObservationIgnored private let frontmost: any FrontmostAppProvider
     @ObservationIgnored private let idle: any IdleTimeProvider
     @ObservationIgnored private let github: GitHubEventsClient
+    @ObservationIgnored private let folders: FolderScanner
+    @ObservationIgnored private var lastSave: Date = .distantPast
     @ObservationIgnored private let calendar: Calendar
     @ObservationIgnored private var activity = ActivityTracker()
     @ObservationIgnored private var timer: Timer?
@@ -39,6 +41,7 @@ public final class Scheduler {
         self.frontmost = frontmost
         self.idle = idle
         self.github = github
+        self.folders = FolderScanner(store: store)
         self.calendar = calendar
         self.record = store.loadDay(DayKey.string(for: now, calendar: calendar))
     }
@@ -82,8 +85,12 @@ public final class Scheduler {
             secondsSinceInput: idle.secondsSinceLastInput()
         )
         let credited = activity.record(sample, tasks: tasks, into: &record)
+        let (spanStarted, spanMoved) = noteActivity(sample)
         let statusesChanged = await evaluateAutomaticTasks(now: now)
-        if !credited.isEmpty || statusesChanged { save() }
+        // Extending an activity span alone saves at most once a minute.
+        if !credited.isEmpty || statusesChanged || spanStarted || (spanMoved && now.timeIntervalSince(lastSave) >= 60) {
+            save(now: now)
+        }
         onTick?(sample)
     }
 
@@ -117,7 +124,7 @@ public final class Scheduler {
     private func evaluateAutomaticTasks(now: Date) async -> Bool {
         let day = record.day
         let context = VerifierContext(now: now, record: record)
-        let environment = VerifierEnvironment(githubUsername: githubUsername, github: github, calendar: calendar)
+        let environment = VerifierEnvironment(githubUsername: githubUsername, github: github, folders: folders, calendar: calendar)
         let evaluated = tasks.filter { $0.type != .manual }
         var results: [String: TaskStatus] = [:]
         for task in evaluated {
@@ -138,7 +145,22 @@ public final class Scheduler {
         return changed
     }
 
-    private func save() {
+    private func noteActivity(_ sample: ActivitySample) -> (started: Bool, moved: Bool) {
+        guard sample.secondsSinceInput <= BreakTracker.activeWindow else { return (false, false) }
+        var spans = record.activity ?? []
+        let before = spans
+        let started = ActivityLog.note(
+            sample.now.addingTimeInterval(-sample.secondsSinceInput),
+            in: &spans,
+            notBefore: calendar.startOfDay(for: sample.now)
+        )
+        guard spans != before else { return (false, false) }
+        record.activity = spans
+        return (started, true)
+    }
+
+    private func save(now: Date = .now) {
+        lastSave = now
         do {
             try store.save(record)
             lastSaveError = nil

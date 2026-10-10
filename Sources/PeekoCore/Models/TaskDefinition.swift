@@ -5,6 +5,8 @@ public enum VerifierType: String, Codable, Hashable, Sendable {
     case appTime
     case remoteCheck
     case appLimit
+    case activity
+    case folderActivity
 }
 
 public struct TaskParams: Codable, Hashable, Sendable {
@@ -13,19 +15,39 @@ public struct TaskParams: Codable, Hashable, Sendable {
     public var idleCutoffSeconds: Int?
     public var source: String?
     public var username: String?
+    /// `activity`: "quietBetween" or "startBetween", with `from` / `until` as "HH:mm".
+    public var rule: String?
+    public var from: String?
+    public var until: String?
+    /// `folderActivity`: absolute folder path, file extensions, and words to add (0 = any edit).
+    public var path: String?
+    public var extensions: [String]?
+    public var minWords: Int?
 
     public init(
         bundleIDs: [String]? = nil,
         minutes: Int? = nil,
         idleCutoffSeconds: Int? = nil,
         source: String? = nil,
-        username: String? = nil
+        username: String? = nil,
+        rule: String? = nil,
+        from: String? = nil,
+        until: String? = nil,
+        path: String? = nil,
+        extensions: [String]? = nil,
+        minWords: Int? = nil
     ) {
         self.bundleIDs = bundleIDs
         self.minutes = minutes
         self.idleCutoffSeconds = idleCutoffSeconds
         self.source = source
         self.username = username
+        self.rule = rule
+        self.from = from
+        self.until = until
+        self.path = path
+        self.extensions = extensions
+        self.minWords = minWords
     }
 }
 

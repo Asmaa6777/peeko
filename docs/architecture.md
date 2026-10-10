@@ -29,6 +29,8 @@ Every task is **one verifier type plus parameters**:
 | `manual` | You tick it | done |
 | `appTime` | Adds up active minutes while one of the given apps is in front | done |
 | `remoteCheck` | Polls an outside source (`githubPush`) | done |
+| `activity` | Judges a time window against today's activity stretches (`quietBetween`, `startBetween`) | done |
+| `folderActivity` | Watches a notes folder: any edit today, or `minWords` added today | done |
 | `appLimit` | Passes while time stays under a limit | v0.2 |
 
 Built-in presets live in `Resources/catalog.json`. Custom tasks use the same shape, with ids that start with `custom-`.
@@ -86,13 +88,38 @@ Unauthenticated 304s **do** count against GitHub's 60/hour limit; polling every 
 
 `makeVerifier(for:environment:)` builds verifiers. `VerifierEnvironment` carries the GitHub client, the username, and the calendar. `isVerifiable(_:)` answers "is there a verifier for this?" without building one.
 
+## Activity stretches, sleep and early mornings
+
+Every tick where the last input was within 2 minutes, the scheduler passes the moment of that input (`now - secondsSinceInput`) to `ActivityLog.note`. That extends today's last span, or starts a new one after a gap of more than 5 minutes. Input from before midnight is clamped to the new day. Spans live in `DayRecord.activity`. A new span saves right away; extending one saves at most once a minute.
+
+`ActivityWindowVerifier` reads those spans:
+
+- `quietBetween` (Slept on time, 00:30–05:00): `failed` if any span overlaps the window. Otherwise `pending` until `until`, then `done(at: until)`. A Mac that slept all night passes.
+- `startBetween` (Up before 8, 04:00–08:00): done at the start of the first span that *starts* at or after `from`, if that's before `until`. So an all-nighter that began at 03:00 doesn't count. It's `failed` once `until` passes without one.
+
+`failed` is shown gently ("up late last night · no worries"). It counts as settled, not left, for the evening reminder and the overall mood. Peeko only sees the Mac, and only while it's running.
+
+## Notes folder
+
+`FolderActivityVerifier` asks the shared `FolderScanner` actor, which rescans a folder at most once a minute. It skips hidden folders (`.obsidian`, `.git`, `.trash`), packages, files over 5 MB, and extensions other than `md` / `markdown` / `txt`.
+
+- With `minWords` at 0, any file modified today passes, at the earliest modification time.
+- With `minWords` set, words added today = for each file changed today, its words now minus its words at the start of the day:
+  - "Start of the day" is the first scan after launch or midnight.
+  - Files created today start at 0, even if they were created before the first scan.
+  - Once a file changes, its starting count is saved in `words/<day>.json`, so a restart keeps it.
+  - Words are whitespace-separated tokens, which works for any script.
+
+The folder comes from an `NSOpenPanel` when the preset is switched on, and is stored in the enabled task's `params.path`. If the folder is in a protected location (Documents, Desktop, iCloud Drive), macOS may ask once for access. Sync tools that touch file dates can trigger the "any edit" mode.
+
 ## Persistence
 
 `Store` reads and writes JSON in `~/Library/Application Support/Peeko/`:
 
 - `tasks.json` (`TaskList`): the enabled tasks, in display order
 - `settings.json` (`AppSettings`): GitHub username, evening reminder, onboarding done. Every field decodes with a default, so older files keep loading.
-- `days/yyyy-MM-dd.json` (`DayRecord`): `statuses` and `accumulatedSeconds`, keyed by task id
+- `days/yyyy-MM-dd.json` (`DayRecord`): `statuses` and `accumulatedSeconds` keyed by task id, plus `activity` spans
+- `words/yyyy-MM-dd.json` (`WordBaselines`): per-file starting word counts for the notes-folder tasks
 
 Rules:
 

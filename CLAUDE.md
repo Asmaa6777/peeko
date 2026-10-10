@@ -40,6 +40,7 @@ Peeko is a local-first macOS menu bar app (Swift 6, SwiftUI, SwiftPM, **no Xcode
 - Notify once per task when an *automatic* task flips to done (`Scheduler.onAutoComplete`); never for manual taps. Notifications only work from the bundled `.app`.
 - The popover content has a fixed height (`Theme.contentHeight`). A resizing `MenuBarExtra` window drifts off the menu bar.
 - A new menu bar icon may hide in macOS's `«` overflow on this machine; that's not a bug.
+- Use `/usr/bin/log` (zsh shadows `log`). Missing banners are usually a Focus: look for `muted by DND suppression` in the NotificationCenter logs before debugging code.
 
 ## Brand and copy
 

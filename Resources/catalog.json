@@ -23,6 +23,34 @@
       "icon": "arrow.up.circle"
     },
     {
+      "id": "slept-on-time",
+      "title": "Slept on time",
+      "type": "activity",
+      "params": { "rule": "quietBetween", "from": "00:30", "until": "05:00" },
+      "icon": "moon.zzz"
+    },
+    {
+      "id": "up-early",
+      "title": "Up before 8",
+      "type": "activity",
+      "params": { "rule": "startBetween", "from": "04:00", "until": "08:00" },
+      "icon": "sunrise"
+    },
+    {
+      "id": "write-notes",
+      "title": "Write in your notes",
+      "type": "folderActivity",
+      "params": { "path": "", "extensions": ["md", "markdown", "txt"], "minWords": 0 },
+      "icon": "pencil.line"
+    },
+    {
+      "id": "write-300",
+      "title": "Write 300 words",
+      "type": "folderActivity",
+      "params": { "path": "", "extensions": ["md", "markdown", "txt"], "minWords": 300 },
+      "icon": "doc.text"
+    },
+    {
       "id": "gym",
       "title": "Gym",
       "type": "manual",
