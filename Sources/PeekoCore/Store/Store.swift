@@ -45,6 +45,15 @@ public struct Store: Sendable {
         try write(record, to: dayURL(record.day))
     }
 
+    /// Every day with a saved file, oldest first.
+    public func allDayKeys() -> [String] {
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: daysDirectory.path)) ?? []
+        return names
+            .filter { $0.range(of: #"^\d{4}-\d{2}-\d{2}\.json$"#, options: .regularExpression) != nil }
+            .map { String($0.dropLast(5)) }
+            .sorted()
+    }
+
     public func loadWordBaselines(_ day: String) -> WordBaselines {
         load(WordBaselines.self, from: wordsDirectory.appendingPathComponent("\(day).json")) ?? WordBaselines(day: day)
     }

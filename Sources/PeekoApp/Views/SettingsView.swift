@@ -109,6 +109,7 @@ struct SettingsView: View {
                     }
                     Divider().overlay(Color.white.opacity(0.08))
                     linkRow("Your data", action: "Reveal in Finder") { model.revealDataFolder() }
+                    linkRow("Everything in one file", action: "Export JSON…") { model.exportData() }
                     linkRow("Updates", action: "Releases on GitHub") {
                         NSWorkspace.shared.open(URL(string: "https://github.com/STACK-42/peeko/releases")!)
                     }

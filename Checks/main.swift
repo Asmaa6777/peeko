@@ -42,6 +42,14 @@ actor FakeHTTP: HTTPClient {
     }
 }
 
+extension JSONDecoder {
+    static var iso8601: JSONDecoder {
+        let d = JSONDecoder()
+        d.dateDecodingStrategy = .iso8601
+        return d
+    }
+}
+
 func offlineGitHub() -> GitHubEventsClient { GitHubEventsClient(http: FakeHTTP([])) }
 
 func eventsJSON(_ events: [(String, String)]) -> String {
@@ -431,6 +439,46 @@ do {
     let missing = TaskDefinition(id: "m", title: "m", type: .folderActivity, params: TaskParams(path: "/nope/\(UUID())"), icon: "pencil")
     check(await status(missing, at(10, 10, 0), scanner: scanner) == .pending, "a missing folder stays pending")
     try? fm.removeItem(at: vault)
+}
+
+// MARK: - History and streaks
+
+group("History and streaks")
+do {
+    let store = tempStore()
+    func day(_ d: Int, done ids: [String], pending: [String] = []) {
+        var record = DayRecord(day: DayKey.string(for: at(d, 12, 0), calendar: calendar))
+        for id in ids { record.statuses[id] = .done(at: at(d, 12, 0)) }
+        for id in pending { record.statuses[id] = .pending }
+        try! store.save(record)
+    }
+    day(4, done: ["gym"])
+    // Oct 5 missing entirely: breaks streaks
+    day(6, done: ["gym", "water"])
+    day(7, done: ["gym"])
+    day(8, done: ["water"], pending: ["gym"])
+    day(9, done: ["gym", "water"])
+    day(10, done: [], pending: ["gym"])
+
+    let today = at(10, 15, 0)
+    let history = History.load(from: store, days: 30, endingAt: today, calendar: calendar)
+    check(history.overallStreak(today: today) == 4, "today with nothing done yet doesn't break the 4-day streak (Oct 6–9)")
+    check(history.streak(for: "gym", today: today) == 1, "gym: done Oct 9, missed Oct 8 → 1")
+    check(history.streak(for: "water", today: today) == 2, "water: Oct 8 and 9 → 2")
+    check(history.timesDone("gym", inLast: 30, today: today) == 4, "gym done 4 times in the last 30 days")
+    check(history.doneCount(on: at(6, 9, 0)) == 2, "two things done on Oct 6")
+
+    var live = history
+    var todayRecord = store.loadDay("2026-10-10")
+    todayRecord.statuses["gym"] = .done(at: today)
+    live.replace(todayRecord)
+    check(live.overallStreak(today: today) == 5, "finishing something today extends the streak to 5")
+    check(live.streak(for: "gym", today: today) == 2, "and gym's streak to 2")
+
+    check(store.allDayKeys() == ["2026-10-04", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09", "2026-10-10"], "lists saved days, oldest first")
+    let export = PeekoExport.make(from: store, now: today)
+    let decoded = try! JSONDecoder.iso8601.decode(PeekoExport.self, from: export.encoded())
+    check(decoded.days.count == 6 && decoded.days.first?.day == "2026-10-04", "export includes every day")
 }
 
 // MARK: - Settings and the evening nudge

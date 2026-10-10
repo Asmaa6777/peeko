@@ -4,6 +4,7 @@ import SwiftUI
 enum Tab: String, CaseIterable {
     case today = "Today"
     case catalog = "Catalog"
+    case history = "History"
     case settings = "Settings"
 }
 
@@ -33,6 +34,7 @@ struct RootView: View {
                             switch tab {
                             case .today: TodayView(tab: $tab)
                             case .catalog: CatalogView()
+                            case .history: HistoryView()
                             case .settings: SettingsView()
                             }
                         }
@@ -73,9 +75,17 @@ struct RootView: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("\(model.doneCount) / \(model.tasks.count)")
                         .font(Theme.mono(15).weight(.medium))
-                    Text("today")
-                        .font(Theme.mono())
-                        .foregroundStyle(Theme.muted)
+                    HStack(spacing: 3) {
+                        if model.streak > 0 {
+                            Image(systemName: "flame.fill")
+                                .foregroundStyle(Theme.green)
+                            Text("\(model.streak) ·")
+                        }
+                        Text("today")
+                    }
+                    .font(Theme.mono())
+                    .foregroundStyle(Theme.muted)
+                    .accessibilityElement(children: .combine)
                 }
                 .padding(.top, 10)
             }
@@ -85,7 +95,7 @@ struct RootView: View {
     }
 
     private var tabBar: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 14) {
             ForEach(Tab.allCases, id: \.self) { item in
                 Button {
                     tab = item

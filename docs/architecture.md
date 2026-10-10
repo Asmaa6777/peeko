@@ -112,6 +112,17 @@ Every tick where the last input was within 2 minutes, the scheduler passes the m
 
 The folder comes from an `NSOpenPanel` when the preset is switched on, and is stored in the enabled task's `params.path`. If the folder is in a protected location (Documents, Desktop, iCloud Drive), macOS may ask once for access. Sync tools that touch file dates can trigger the "any edit" mode.
 
+## History and streaks
+
+`History` (core) holds a window of `DayRecord`s, `History.load(from:days:endingAt:)` reading the last 35 day files. The app swaps in the live record for today (`replace`).
+
+- **Overall streak:** consecutive days with at least one task done.
+- **Per-task streak:** consecutive days that task was done.
+- **Today** only extends a streak; it never breaks one before the day is over. Counting starts from yesterday if nothing is done yet today.
+- A missing day file counts as an empty day, so it breaks the streak.
+
+`AppModel` reloads past days once per local day (at launch and on rollover), so opening the History tab is cheap. `PeekoExport` bundles `tasks.json`, `settings.json` and every day file (`Store.allDayKeys()`) into one JSON document for Settings → Export.
+
 ## Persistence
 
 `Store` reads and writes JSON in `~/Library/Application Support/Peeko/`:
@@ -142,7 +153,7 @@ The scheduler moves to a new day file on every tick, on `NSCalendarDayChanged`, 
   - Break reminders also run from `onTick`. `BreakTracker`, a pure struct in the core, adds up active screen time in any app: input within 2 minutes counts, using the same capped 10-second ticks. Five or more minutes idle, or a 5+ minute gap between ticks (asleep, app not running), counts as the break and resets the count. Each reminder also restarts it. The messages rotate (`BreakMessages`). The interval and on/off live in `AppSettings`.
   - Banners show even while the popover is open.
 - **Onboarding** replaces the tabs on first launch, until `hasCompletedOnboarding`: welcome, then the notification permission (with a reason), then an optional GitHub username. The tab bar stays in the layout, invisible, so the panel height doesn't change.
-- **`RootView`** draws the header (face, wordmark, `done / total`), the Today and Catalog tabs, and the footer. The content area has a **fixed height**: a `MenuBarExtra` window that resizes when you switch tabs drifts away from the menu bar.
+- **`RootView`** draws the header (face, wordmark, `done / total`, streak), the Today / Catalog / History / Settings tabs, and the footer. The content area has a **fixed height**: a `MenuBarExtra` window that resizes when you switch tabs drifts away from the menu bar.
 - **`FaceView`** draws Peeko from the brand file's 72×60 geometry. Status maps to a face: pending or failed → *dozing*, in progress → *looking*, done → *beaming*.
 - **`MenuBarIcon`** draws an eyes-only **template** `NSImage`, so macOS tints it for light and dark menu bars. It shows the day's overall mood: nothing done → dozing, some progress → looking, everything done → beaming.
 

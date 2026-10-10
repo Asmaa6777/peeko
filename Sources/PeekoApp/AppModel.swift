@@ -3,6 +3,7 @@ import Foundation
 import Observation
 import PeekoCore
 import ServiceManagement
+import UniformTypeIdentifiers
 import UserNotifications
 
 enum Mood {
@@ -30,6 +31,8 @@ final class AppModel {
     private(set) var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
     private var localError: String?
     private var breakTracker = BreakTracker()
+    private var pastDays = History(days: [:])
+    private var pastDaysLoadedFor: String?
     private var breakMessageIndex = 0
 
     private static let lastNudgeDayKey = "lastNudgeDay"
@@ -53,6 +56,7 @@ final class AppModel {
             self?.remindToTakeBreakIfDue(sample)
         }
         scheduler.start()
+        loadHistoryIfNeeded()
         Task { await refreshSystemStatus() }
     }
 
@@ -101,6 +105,40 @@ final class AppModel {
 
     func isEnabled(_ preset: TaskDefinition) -> Bool {
         tasks.contains { $0.id == preset.id }
+    }
+
+    // MARK: History
+
+    static let historyDays = 35
+
+    /// Past days come from disk (reloaded once per day); today is the live record.
+    var history: History {
+        var h = pastDays
+        h.replace(scheduler.record)
+        return h
+    }
+
+    var streak: Int { history.overallStreak(today: .now) }
+
+    func loadHistoryIfNeeded() {
+        let today = DayKey.string(for: .now)
+        guard pastDaysLoadedFor != today else { return }
+        pastDays = History.load(from: store, days: Self.historyDays, endingAt: .now)
+        pastDaysLoadedFor = today
+    }
+
+    func exportData() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "peeko-export-\(DayKey.string(for: .now)).json"
+        panel.allowedContentTypes = [.json]
+        NSApp.activate()
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try PeekoExport.make(from: store).encoded().write(to: url, options: .atomic)
+            localError = nil
+        } catch {
+            localError = "Couldn't export: \(error.localizedDescription)"
+        }
     }
 
     func needsFolder(_ preset: TaskDefinition) -> Bool {
@@ -155,6 +193,7 @@ final class AppModel {
 
     func rolloverIfNeeded() {
         scheduler.rolloverIfNeeded(now: .now)
+        loadHistoryIfNeeded()
     }
 
     // MARK: Settings

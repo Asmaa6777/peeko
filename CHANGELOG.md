@@ -10,6 +10,12 @@ All notable changes to Peeko are listed here. The format follows [Keep a Changel
 - "Up before 8": passes when your first stretch of activity after 04:00 starts before 08:00.
 - "Write in your notes" and "Write 300 words": pick a notes folder or Obsidian vault, and Peeko ticks these when a note changes today or when you've added enough words.
 - Days now record when you were active (stretches of keyboard and mouse use), stored in the day file.
+- History tab: your streak (days in a row with at least one thing done), a five-week calendar of how much got done each day, and a streak plus a 30-day count for every task. The streak also shows in the header.
+- Settings → Export JSON: your tasks, settings and every day in one file.
+
+### Changed
+
+- GitHub Actions workflows use the Node 24 versions of their actions.
 
 ## [0.1.0] - 2026-10-10
 
