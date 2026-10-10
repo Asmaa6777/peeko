@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "presets": [
+    {
+      "id": "read-pdfs",
+      "title": "Read for 30 minutes",
+      "type": "appTime",
+      "params": { "bundleIDs": ["com.apple.Preview"], "minutes": 30, "idleCutoffSeconds": 120 },
+      "icon": "book"
+    },
+    {
+      "id": "deep-work",
+      "title": "Deep work for 90 minutes",
+      "type": "appTime",
+      "params": { "bundleIDs": ["com.microsoft.VSCode", "com.apple.Terminal"], "minutes": 90, "idleCutoffSeconds": 120 },
+      "icon": "laptopcomputer"
+    },
+    {
+      "id": "github-push",
+      "title": "Push to GitHub",
+      "type": "remoteCheck",
+      "params": { "source": "githubPush", "username": "" },
+      "icon": "arrow.up.circle"
+    },
+    {
+      "id": "gym",
+      "title": "Gym",
+      "type": "manual",
+      "params": {},
+      "icon": "dumbbell"
+    },
+    {
+      "id": "water",
+      "title": "Drink water",
+      "type": "manual",
+      "params": {},
+      "icon": "drop"
+    }
+  ]
+}

@@ -10,5 +10,6 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
 cp "$BIN_DIR/PeekoApp" "$APP/Contents/MacOS/Peeko"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
+cp Resources/catalog.json "$APP/Contents/Resources/"
 
 echo "Bundled $APP"
