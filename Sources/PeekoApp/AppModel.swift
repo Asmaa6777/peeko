@@ -29,6 +29,8 @@ final class AppModel {
     private(set) var settings: AppSettings
     private(set) var notificationStatus: UNAuthorizationStatus = .notDetermined
     private(set) var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
+    private(set) var accessibilityTrusted = Accessibility.isTrusted
+    private(set) var githubProblem: String?
     private var localError: String?
     private var breakTracker = BreakTracker()
     private var pastDays = History(days: [:])
@@ -54,6 +56,11 @@ final class AppModel {
         scheduler.onTick = { [weak self] sample in
             self?.nudgeIfDue(now: sample.now)
             self?.remindToTakeBreakIfDue(sample)
+            Task { [weak self] in
+                guard let self else { return }
+                let problem = await self.scheduler.githubProblem()
+                if problem != self.githubProblem { self.githubProblem = problem }
+            }
         }
         scheduler.start()
         loadHistoryIfNeeded()
@@ -82,12 +89,13 @@ final class AppModel {
 
     var doneCount: Int { tasks.filter { status(for: $0).isDone }.count }
 
-    /// Tasks that can still happen today (not done, not already missed).
+    /// Tasks that can still happen today (not done, not already missed). Limits never need doing.
     var openCount: Int {
         tasks.filter {
+            guard $0.type != .appLimit else { return false }
             switch status(for: $0) {
-            case .done, .failed: false
-            case .pending, .inProgress: true
+            case .done, .failed: return false
+            case .pending, .inProgress: return true
             }
         }.count
     }
@@ -161,6 +169,7 @@ final class AppModel {
     func setEnabled(_ preset: TaskDefinition, _ enabled: Bool) {
         if enabled {
             guard !isEnabled(preset) else { return }
+            if preset.needsWindowTitle && !accessibilityTrusted { requestAccessibility() }
             taskList.tasks.append(preset)
         } else {
             taskList.tasks.removeAll { $0.id == preset.id }
@@ -175,9 +184,11 @@ final class AppModel {
         saveTaskList()
     }
 
-    func addCustomAppTimeTask(bundleID: String, appName: String, minutes: Int) {
+    func addCustomAppTimeTask(bundleID: String, appName: String, minutes: Int, limit: Bool = false) {
         guard minutes > 0 else { return }
-        taskList.tasks.append(.customAppTime(bundleID: bundleID, appName: appName, minutes: minutes))
+        taskList.tasks.append(limit
+            ? .customAppLimit(bundleID: bundleID, appName: appName, minutes: minutes)
+            : .customAppTime(bundleID: bundleID, appName: appName, minutes: minutes))
         saveTaskList()
     }
 
@@ -219,7 +230,15 @@ final class AppModel {
     func refreshSystemStatus() async {
         notificationStatus = await notifier.authorizationStatus()
         launchAtLoginStatus = SMAppService.mainApp.status
+        accessibilityTrusted = Accessibility.isTrusted
     }
+
+    func requestAccessibility() {
+        Accessibility.requestTrust()
+        accessibilityTrusted = Accessibility.isTrusted
+    }
+
+    var needsAccessibility: Bool { tasks.contains(where: \.needsWindowTitle) }
 
     func requestNotifications() async {
         _ = await notifier.requestAuthorization()

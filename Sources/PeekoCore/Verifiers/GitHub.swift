@@ -1,4 +1,7 @@
 import Foundation
+import OSLog
+
+private let log = Logger(subsystem: "com.a7med7x7.peeko", category: "github")
 
 public protocol HTTPClient: Sendable {
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse)
@@ -47,6 +50,7 @@ public actor GitHubEventsClient {
 
     private let http: any HTTPClient
     private var entries: [String: Entry] = [:]
+    private var problems: [String: String] = [:]
     public private(set) var requestCount = 0
 
     public init(http: any HTTPClient) {
@@ -67,17 +71,42 @@ public actor GitHubEventsClient {
 
         do {
             let (data, response) = try await http.send(request)
+            let remaining = response.value(forHTTPHeaderField: "X-RateLimit-Remaining") ?? "?"
             if response.statusCode == 200 {
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = .iso8601
-                entries[key]?.events = try decoder.decode([GitHubEvent].self, from: data)
+                let events = try decoder.decode([GitHubEvent].self, from: data)
+                entries[key]?.events = events
                 entries[key]?.etag = response.value(forHTTPHeaderField: "ETag")
+                log.info("\(username, privacy: .public): 200, \(events.count) events, rate limit left \(remaining, privacy: .public)")
+                problems[key] = nil
+            } else {
+                // 304 keeps the cached events; anything else is retried at the next poll.
+                log.info("\(username, privacy: .public): \(response.statusCode), rate limit left \(remaining, privacy: .public)")
+                problems[key] = Self.problem(forStatus: response.statusCode)
             }
-            // 304 keeps the cached events; anything else is retried at the next poll.
         } catch {
-            // Offline or bad payload: keep what we had and try again at the next poll.
+            // Offline, blocked by a firewall, or a bad payload: keep what we had and retry at the next poll.
+            log.error("\(username, privacy: .public): request failed: \(error.localizedDescription, privacy: .public)")
+            problems[key] = error is DecodingError
+                ? "GitHub sent something unexpected"
+                : "can't reach GitHub · offline or a firewall?"
         }
         return entries[key]?.events
+    }
+
+    /// What went wrong with the last request for this user, in words for the UI. nil when fine.
+    public func problem(for username: String) -> String? {
+        problems[username.lowercased()]
+    }
+
+    static func problem(forStatus status: Int) -> String? {
+        switch status {
+        case 200, 304: nil
+        case 404: "GitHub doesn't know that username"
+        case 403, 429: "GitHub's rate limit · trying again soon"
+        default: "GitHub answered \(status) · trying again soon"
+        }
     }
 
     static func request(for username: String, etag: String?) -> URLRequest? {

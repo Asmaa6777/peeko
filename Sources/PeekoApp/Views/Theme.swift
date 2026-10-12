@@ -5,6 +5,8 @@ enum Theme {
     static let chalk = Color(red: 0xF2 / 255, green: 0xF2 / 255, blue: 0xEF / 255)
     // oklch(0.82 0.15 145) converted to sRGB.
     static let green = Color(red: 0x81 / 255, green: 0xDD / 255, blue: 0x86 / 255)
+    // oklch(0.82 0.15 330) converted to sRGB.
+    static let blush = Color(red: 0xFA / 255, green: 0x9F / 255, blue: 0xF2 / 255)
     static let muted = Color(red: 0xA9 / 255, green: 0xA9 / 255, blue: 0xA5 / 255)
     static let card = Color.white.opacity(0.05)
     static let cardHover = Color.white.opacity(0.09)

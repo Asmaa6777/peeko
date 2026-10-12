@@ -12,6 +12,9 @@ public enum VerifierType: String, Codable, Hashable, Sendable {
 public struct TaskParams: Codable, Hashable, Sendable {
     public var bundleIDs: [String]?
     public var minutes: Int?
+    /// `appTime` / `appLimit`: only count while the front window's title contains one of these
+    /// (case-insensitive). Needs Accessibility permission.
+    public var titleContains: [String]?
     public var idleCutoffSeconds: Int?
     public var source: String?
     public var username: String?
@@ -27,6 +30,7 @@ public struct TaskParams: Codable, Hashable, Sendable {
     public init(
         bundleIDs: [String]? = nil,
         minutes: Int? = nil,
+        titleContains: [String]? = nil,
         idleCutoffSeconds: Int? = nil,
         source: String? = nil,
         username: String? = nil,
@@ -39,6 +43,7 @@ public struct TaskParams: Codable, Hashable, Sendable {
     ) {
         self.bundleIDs = bundleIDs
         self.minutes = minutes
+        self.titleContains = titleContains
         self.idleCutoffSeconds = idleCutoffSeconds
         self.source = source
         self.username = username
@@ -87,7 +92,20 @@ public struct TaskDefinition: Codable, Hashable, Identifiable, Sendable {
         )
     }
 
+    public static func customAppLimit(bundleID: String, appName: String, minutes: Int) -> TaskDefinition {
+        TaskDefinition(
+            id: customIDPrefix + UUID().uuidString.lowercased(),
+            title: "Under \(minutes) min in \(appName)",
+            type: .appLimit,
+            params: TaskParams(bundleIDs: [bundleID], minutes: minutes, idleCutoffSeconds: 120),
+            icon: "hourglass"
+        )
+    }
+
     public var isCustom: Bool { id.hasPrefix(Self.customIDPrefix) }
+
+    /// True when counting needs the front window's title (and so Accessibility permission).
+    public var needsWindowTitle: Bool { !(params.titleContains ?? []).isEmpty }
 }
 
 public struct Catalog: Codable, Sendable {

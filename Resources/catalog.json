@@ -51,6 +51,18 @@
       "icon": "doc.text"
     },
     {
+      "id": "youtube-limit",
+      "title": "Under 45 min of YouTube",
+      "type": "appLimit",
+      "params": {
+        "bundleIDs": ["com.apple.Safari", "com.google.Chrome", "company.thebrowser.Browser", "org.mozilla.firefox", "com.brave.Browser", "com.microsoft.edgemac"],
+        "titleContains": ["YouTube"],
+        "minutes": 45,
+        "idleCutoffSeconds": 600
+      },
+      "icon": "play.rectangle"
+    },
+    {
       "id": "gym",
       "title": "Gym",
       "type": "manual",

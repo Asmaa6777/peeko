@@ -107,6 +107,20 @@ struct SettingsView: View {
                         .font(Theme.mono())
                         .foregroundStyle(Theme.green)
                     }
+                    if model.needsAccessibility || model.accessibilityTrusted {
+                        Divider().overlay(Color.white.opacity(0.08))
+                        if model.accessibilityTrusted {
+                            Label("Accessibility is on (for website limits)", systemImage: "checkmark.circle.fill")
+                                .font(.system(size: 13))
+                                .foregroundStyle(Theme.green)
+                        } else {
+                            linkRow("Website limits need Accessibility", action: "Allow") { model.requestAccessibility() }
+                            Text("Peeko reads only the front window's title, to spot sites like YouTube.")
+                                .font(Theme.mono(10))
+                                .foregroundStyle(Theme.muted)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
                     Divider().overlay(Color.white.opacity(0.08))
                     linkRow("Your data", action: "Reveal in Finder") { model.revealDataFolder() }
                     linkRow("Everything in one file", action: "Export JSON…") { model.exportData() }

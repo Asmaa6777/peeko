@@ -4,15 +4,17 @@ public struct ActivitySample: Sendable {
     public var now: Date
     public var frontmostBundleID: String?
     public var secondsSinceInput: TimeInterval
+    public var windowTitle: String?
 
-    public init(now: Date, frontmostBundleID: String?, secondsSinceInput: TimeInterval) {
+    public init(now: Date, frontmostBundleID: String?, secondsSinceInput: TimeInterval, windowTitle: String? = nil) {
         self.now = now
         self.frontmostBundleID = frontmostBundleID
         self.secondsSinceInput = secondsSinceInput
+        self.windowTitle = windowTitle
     }
 }
 
-/// Credits active time to `appTime` tasks, one tick at a time.
+/// Credits active time to `appTime` and `appLimit` tasks, one tick at a time.
 public struct ActivityTracker: Sendable {
     /// A tick never credits more than this, so a sleeping Mac can't add hours.
     public static let maxDelta: TimeInterval = 10
@@ -39,8 +41,13 @@ public struct ActivityTracker: Sendable {
         guard delta > 0, let front = sample.frontmostBundleID else { return [:] }
 
         var credited: [String: TimeInterval] = [:]
-        for task in tasks where task.type == .appTime {
+        for task in tasks where task.type == .appTime || task.type == .appLimit {
             guard task.params.bundleIDs?.contains(front) == true else { continue }
+            if task.needsWindowTitle {
+                guard let title = sample.windowTitle?.lowercased(),
+                      task.params.titleContains!.contains(where: { title.contains($0.lowercased()) })
+                else { continue }
+            }
             let cutoff = task.params.idleCutoffSeconds.map(TimeInterval.init) ?? Self.defaultIdleCutoff
             guard sample.secondsSinceInput <= cutoff else { continue }
             record.accumulatedSeconds[task.id, default: 0] += delta

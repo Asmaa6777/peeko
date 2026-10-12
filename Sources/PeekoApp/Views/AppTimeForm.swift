@@ -2,11 +2,12 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// "+ custom app-time task": pick an app, set minutes, add.
+/// "+ custom app-time task": pick an app, at least / at most, minutes, add.
 struct AppTimeForm: View {
     @Environment(AppModel.self) private var model
     @ViewState private var app: PickedApp?
     @ViewState private var minutes = 30
+    @ViewState private var isLimit = false
 
     var body: some View {
         HStack(spacing: 8) {
@@ -30,6 +31,12 @@ struct AppTimeForm: View {
 
             Spacer(minLength: 4)
 
+            Button(isLimit ? "at most" : "at least") { isLimit.toggle() }
+                .buttonStyle(.plain)
+                .font(Theme.mono())
+                .foregroundStyle(isLimit ? Theme.blush : Theme.green)
+                .help(isLimit ? "Stay under this many minutes" : "Spend at least this many minutes")
+
             Stepper(value: $minutes, in: 5...480, step: 5) {
                 Text("\(minutes) min")
                     .font(Theme.mono())
@@ -39,7 +46,7 @@ struct AppTimeForm: View {
 
             Button("Add") {
                 guard let app else { return }
-                model.addCustomAppTimeTask(bundleID: app.bundleID, appName: app.name, minutes: minutes)
+                model.addCustomAppTimeTask(bundleID: app.bundleID, appName: app.name, minutes: minutes, limit: isLimit)
                 self.app = nil
             }
             .buttonStyle(.plain)

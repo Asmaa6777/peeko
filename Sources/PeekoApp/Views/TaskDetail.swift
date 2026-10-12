@@ -6,10 +6,12 @@ enum TaskDetail {
         switch task.type {
         case .manual:
             return "tick it yourself"
-        case .appTime, .appLimit:
+        case .appTime:
             let minutes = task.params.minutes.map { "\($0) min" } ?? "time"
             let apps = appNames(task)
             return apps.isEmpty ? minutes : "\(minutes) in \(apps)"
+        case .appLimit:
+            return "under \(task.params.minutes ?? 0) min \(limitTarget(task))"
         case .remoteCheck:
             return task.params.source == "githubPush" ? "a public push today" : "remote check"
         case .activity:
@@ -30,6 +32,7 @@ enum TaskDetail {
         case .manual: return "done · \(time)"
         case .activity where task.params.rule == "quietBetween": return "looks like you slept on time"
         case .activity: return "up and about at \(time)"
+        case .appLimit: return "stayed under · nice"
         default: return "Peeko saw that! · \(time)"
         }
     }
@@ -39,8 +42,17 @@ enum TaskDetail {
         switch task.type {
         case .activity where task.params.rule == "quietBetween": return "up late last night · no worries"
         case .activity: return "a slow morning · no worries"
+        case .appLimit: return "over today's \(task.params.minutes ?? 0) min · fresh start tomorrow"
         default: return "not today · no worries"
         }
+    }
+
+    /// "of YouTube" for title filters, "in Discord" for whole apps.
+    static func limitTarget(_ task: TaskDefinition) -> String {
+        if let titles = task.params.titleContains, !titles.isEmpty {
+            return "of " + titles.joined(separator: " / ")
+        }
+        return "in " + appNames(task)
     }
 
     static func folderName(_ task: TaskDefinition) -> String? {

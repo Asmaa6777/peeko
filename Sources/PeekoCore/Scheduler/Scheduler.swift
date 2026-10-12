@@ -73,6 +73,11 @@ public final class Scheduler {
         observers.removeAll()
     }
 
+    /// The last GitHub problem for the configured username, if any.
+    public func githubProblem() async -> String? {
+        githubUsername.isEmpty ? nil : await github.problem(for: githubUsername)
+    }
+
     public func pause() {
         activity.pause()
     }
@@ -82,7 +87,9 @@ public final class Scheduler {
         let sample = ActivitySample(
             now: now,
             frontmostBundleID: frontmost.frontmostBundleID(),
-            secondsSinceInput: idle.secondsSinceLastInput()
+            secondsSinceInput: idle.secondsSinceLastInput(),
+            // Only ask for the title (an Accessibility call) when a task filters on it.
+            windowTitle: tasks.contains(where: \.needsWindowTitle) ? frontmost.frontmostWindowTitle() : nil
         )
         let credited = activity.record(sample, tasks: tasks, into: &record)
         let (spanStarted, spanMoved) = noteActivity(sample)
@@ -103,7 +110,23 @@ public final class Scheduler {
     public func rolloverIfNeeded(now: Date) {
         let key = DayKey.string(for: now, calendar: calendar)
         guard key != record.day else { return }
+        finalizeLimits()
         record = store.loadDay(key)
+    }
+
+    /// A "stay under" task that's still under its limit when the day ends counts as done for that day.
+    private func finalizeLimits() {
+        guard let end = DayKey.endOfDay(record.day, calendar: calendar) else { return }
+        var changed = false
+        for task in tasks where task.type == .appLimit {
+            switch record.statuses[task.id] {
+            case .failed, .done: continue
+            default:
+                record.statuses[task.id] = .done(at: end)
+                changed = true
+            }
+        }
+        if changed { save() }
     }
 
     public func setManual(_ done: Bool, for task: TaskDefinition, now: Date = .now) {

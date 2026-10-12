@@ -16,8 +16,11 @@ var failures = 0
 
 @MainActor final class FakeFrontmost: FrontmostAppProvider {
     var bundleID: String?
-    init(_ bundleID: String?) { self.bundleID = bundleID }
+    var title: String?
+    private(set) var titleRequests = 0
+    init(_ bundleID: String?, title: String? = nil) { self.bundleID = bundleID; self.title = title }
     func frontmostBundleID() -> String? { bundleID }
+    func frontmostWindowTitle() -> String? { titleRequests += 1; return title }
 }
 
 @MainActor final class FakeIdle: IdleTimeProvider {
@@ -237,6 +240,16 @@ do {
     check(await client.events(for: "../evil", now: t0) == nil, "rejects invalid usernames without a request")
     check(await client.requestCount == 3, "no request was made for the invalid username")
     check(GitHubEventsClient.isValidUsername("a7med-7x7") && !GitHubEventsClient.isValidUsername("-bad"), "username validation")
+    check(await client.problem(for: "octocat") == "GitHub answered 500 · trying again soon", "a server error is reported, not hidden")
+
+    let offline = GitHubEventsClient(http: FakeHTTP([]))
+    _ = await offline.events(for: "octocat", now: t0)
+    check(await offline.problem(for: "OctoCat") == "can't reach GitHub · offline or a firewall?", "a failed request (e.g. a firewall) is reported")
+    let missingUser = GitHubEventsClient(http: FakeHTTP([.init(status: 404, body: "", etag: nil), .init(status: 200, body: "[]", etag: nil)]))
+    _ = await missingUser.events(for: "nobody", now: t0)
+    check(await missingUser.problem(for: "nobody") == "GitHub doesn't know that username", "404 → unknown username")
+    _ = await missingUser.events(for: "nobody", now: t0.addingTimeInterval(600))
+    check(await missingUser.problem(for: "nobody") == nil, "a good answer clears the problem")
 }
 
 group("GitHubPushVerifier")
@@ -439,6 +452,75 @@ do {
     let missing = TaskDefinition(id: "m", title: "m", type: .folderActivity, params: TaskParams(path: "/nope/\(UUID())"), icon: "pencil")
     check(await status(missing, at(10, 10, 0), scanner: scanner) == .pending, "a missing folder stays pending")
     try? fm.removeItem(at: vault)
+}
+
+// MARK: - Stay under (appLimit)
+
+group("Stay under: counting and limits")
+do {
+    let browsers = ["com.apple.Safari", "com.google.Chrome"]
+    let youtube = TaskDefinition(id: "youtube", title: "Under 45 min of YouTube", type: .appLimit,
+                                 params: TaskParams(bundleIDs: browsers, minutes: 45, titleContains: ["YouTube"]), icon: "play")
+    let discord = TaskDefinition(id: "discord", title: "Under 30 min in Discord", type: .appLimit,
+                                 params: TaskParams(bundleIDs: ["com.hnc.Discord"], minutes: 30), icon: "bubble")
+
+    var tracker = ActivityTracker()
+    var record = DayRecord(day: "2026-10-10")
+    let t0 = at(10, 20, 0)
+    func tick(_ i: Int, _ app: String?, _ title: String?) {
+        tracker.record(ActivitySample(now: t0.addingTimeInterval(Double(i) * 10), frontmostBundleID: app, secondsSinceInput: 5, windowTitle: title),
+                       tasks: [youtube, discord], into: &record)
+    }
+    tick(0, "com.google.Chrome", "Lofi beats - YouTube")
+    tick(1, "com.google.Chrome", "Lofi beats - YouTube")
+    tick(2, "com.google.Chrome", "Pull requests · GitHub")
+    tick(3, "com.apple.Safari", "how to cook rice - youtube")
+    tick(4, "com.google.Chrome", nil)
+    check(record.accumulatedSeconds["youtube"] == 20, "counts only while a browser shows YouTube (case-insensitive)")
+    tick(5, "com.hnc.Discord", nil)
+    check(record.accumulatedSeconds["discord"] == 10, "a whole-app limit needs no title")
+
+    let verifier = AppLimitVerifier(definition: youtube)
+    var r = DayRecord(day: "2026-10-10")
+    r.accumulatedSeconds["youtube"] = 27 * 60
+    check(await verifier.evaluate(context: .init(now: t0, record: r)) == .inProgress(progress: 0.6), "27 of 45 min → 60% used")
+    r.accumulatedSeconds["youtube"] = 45 * 60
+    check(await verifier.evaluate(context: .init(now: t0, record: r)) == .inProgress(progress: 1.0), "exactly at the limit is still okay")
+    r.accumulatedSeconds["youtube"] = 45 * 60 + 10
+    check(await verifier.evaluate(context: .init(now: t0, record: r)) == .failed, "over the limit → missed for today")
+    r.statuses["youtube"] = .failed
+    r.accumulatedSeconds["youtube"] = 0
+    check(await verifier.evaluate(context: .init(now: t0, record: r)) == .failed, "once over, it stays over for the day")
+    check(DayKey.endOfDay("2026-10-10", calendar: calendar) == at(10, 23, 59, 59), "end of day is 23:59:59 local")
+}
+
+group("Stay under: scheduler")
+do {
+    let youtube = TaskDefinition(id: "youtube", title: "YT", type: .appLimit,
+                                 params: TaskParams(bundleIDs: ["com.google.Chrome"], minutes: 1, titleContains: ["YouTube"]), icon: "play")
+    let discord = TaskDefinition(id: "discord", title: "Discord", type: .appLimit,
+                                 params: TaskParams(bundleIDs: ["com.hnc.Discord"], minutes: 30), icon: "bubble")
+    let store = tempStore()
+    let front = FakeFrontmost("com.google.Chrome", title: "Video - YouTube")
+    let scheduler = Scheduler(store: store, frontmost: front, idle: FakeIdle(5), github: offlineGitHub(), calendar: calendar, now: at(10, 22, 0))
+
+    scheduler.tasks = [discord]
+    await scheduler.tick(now: at(10, 22, 0))
+    check(front.titleRequests == 0, "no window-title lookups when no task needs one")
+
+    scheduler.tasks = [youtube, discord]
+    var completed: [String] = []
+    scheduler.onAutoComplete = { completed.append($0.id) }
+    for i in 1...8 { await scheduler.tick(now: at(10, 22, 0).addingTimeInterval(Double(i) * 10)) }
+    check(front.titleRequests == 8, "looks up the title once per tick when needed")
+    check(scheduler.record.statuses["youtube"] == .failed, "80s of YouTube is over a 1-minute limit")
+    check(scheduler.record.statuses["discord"] == .inProgress(progress: 0), "Discord unused so far")
+
+    await scheduler.tick(now: at(11, 0, 0, 5))
+    let yesterday = store.loadDay("2026-10-10")
+    check(yesterday.statuses["discord"] == .done(at: at(10, 23, 59, 59)), "stayed under all day → done at the end of the day")
+    check(yesterday.statuses["youtube"] == .failed, "went over → stays missed")
+    check(completed.isEmpty, "finishing a limit at midnight doesn't send a notification")
 }
 
 // MARK: - History and streaks

@@ -49,7 +49,7 @@ public func isVerifiable(_ definition: TaskDefinition) -> Bool {
     case .remoteCheck: definition.params.source == "githubPush"
     case .activity: ActivityWindowVerifier.rules.contains(definition.params.rule ?? "")
     case .folderActivity: true
-    case .appLimit: false
+    case .appLimit: (definition.params.minutes ?? 0) > 0
     }
 }
 
@@ -74,6 +74,6 @@ public func makeVerifier(for definition: TaskDefinition, environment: VerifierEn
     case .folderActivity:
         return FolderActivityVerifier(definition: definition, scanner: environment.folders, calendar: environment.calendar)
     case .appLimit:
-        return nil
+        return AppLimitVerifier(definition: definition)
     }
 }

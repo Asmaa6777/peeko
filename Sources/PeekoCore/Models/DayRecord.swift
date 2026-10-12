@@ -76,4 +76,14 @@ public enum DayKey {
         let c = calendar.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
     }
+
+    /// The last second of a `yyyy-MM-dd` day in the calendar's time zone.
+    public static func endOfDay(_ key: String, calendar: Calendar = .current) -> Date? {
+        let parts = key.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3,
+              let start = calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2])),
+              let next = calendar.date(byAdding: .day, value: 1, to: start)
+        else { return nil }
+        return next.addingTimeInterval(-1)
+    }
 }

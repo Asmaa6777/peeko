@@ -31,7 +31,7 @@ Every task is **one verifier type plus parameters**:
 | `remoteCheck` | Polls an outside source (`githubPush`) | done |
 | `activity` | Judges a time window against today's activity stretches (`quietBetween`, `startBetween`) | done |
 | `folderActivity` | Watches a notes folder: any edit today, or `minWords` added today | done |
-| `appLimit` | Passes while time stays under a limit | v0.2 |
+| `appLimit` | Stay under N active minutes in an app (optionally only while the window title matches) | done |
 
 Built-in presets live in `Resources/catalog.json`. Custom tasks use the same shape, with ids that start with `custom-`.
 
@@ -111,6 +111,14 @@ Every tick where the last input was within 2 minutes, the scheduler passes the m
   - Words are whitespace-separated tokens, which works for any script.
 
 The folder comes from an `NSOpenPanel` when the preset is switched on, and is stored in the enabled task's `params.path`. If the folder is in a protected location (Documents, Desktop, iCloud Drive), macOS may ask once for access. Sync tools that touch file dates can trigger the "any edit" mode.
+
+## Stay-under limits (`appLimit`)
+
+Time is counted by the same `ActivityTracker` as `appTime`. A task with `titleContains` only counts while the front window's title contains one of the strings (case-insensitive). The scheduler only asks `FrontmostAppProvider.frontmostWindowTitle()` when some enabled task needs it. The real provider reads `kAXFocusedWindowAttribute` → `kAXTitleAttribute` through the Accessibility API, with a 0.25s messaging timeout, and returns nil without permission.
+
+`AppLimitVerifier` returns `inProgress(used / limit)` while at or under the limit, and `failed` once over. Once failed it stays failed for the day. Being under the limit isn't "done" during the day: on rollover, `Scheduler.finalizeLimits()` marks still-under limits `done(at: 23:59:59)` in yesterday's file, so they count in History without a notification. Limits never count as "left" for the evening reminder or the overall mood.
+
+Accessibility is requested (`AXIsProcessTrustedWithOptions` with the prompt option) only when a title-filtered preset is turned on, or from Settings. Ad-hoc signed builds get a new code identity each release, so macOS may ask to re-allow it after updating.
 
 ## History and streaks
 

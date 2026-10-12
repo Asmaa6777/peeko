@@ -4,6 +4,12 @@ All notable changes to Peeko are listed here. The format follows [Keep a Changel
 
 ## [Unreleased]
 
+### Added
+
+- "Stay under" tasks: keep time in an app (or on a site) below a limit. Ships with "Under 45 min of YouTube". The ring shows time used and turns pink near the limit. Going over marks it missed for the day; staying under counts as done when the day ends.
+- The custom app-time form can now be "at least" or "at most".
+- Website limits read the front window's title, which needs Accessibility permission. Peeko asks only when you turn such a task on. Whole-app limits need no permission.
+
 ## [0.2.0] - 2026-10-10
 
 Peeko notices more: sleep, early mornings, writing, and a history of how your days went.

@@ -79,11 +79,15 @@ private struct TaskRow: View {
             Text(TaskDetail.done(task, at: at))
         } else if case .failed = status {
             Text(TaskDetail.missed(task))
+        } else if task.needsWindowTitle && !model.accessibilityTrusted {
+            Text("needs Accessibility · allow in Settings")
+        } else if task.type == .appLimit, case let .inProgress(p) = status, let limit = task.params.minutes {
+            Text("\(Int((p * Double(limit)).rounded(.down))) of \(limit) min used · \(TaskDetail.limitTarget(task).dropFirst(3))")
         } else if task.type == .folderActivity, case let .inProgress(p) = status, let target = task.params.minWords {
             Text("\(Int((p * Double(target)).rounded())) of \(target) words · \(TaskDetail.folderName(task) ?? "notes")")
         } else if task.type == .remoteCheck {
             let username = model.githubUsername(for: task)
-            Text(username.isEmpty ? "add your GitHub username in Settings" : "checking… · @\(username)")
+            Text(username.isEmpty ? "add your GitHub username in Settings" : model.githubProblem ?? "checking… · @\(username)")
         } else if case .inProgress = status, let target = task.params.minutes {
             Text("\(model.accumulatedMinutes(for: task)) of \(target) min · \(TaskDetail.appNames(task))")
         } else {
@@ -101,11 +105,13 @@ private struct TaskRow: View {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 18))
                 .foregroundStyle(Theme.green)
-        } else if task.type == .appTime || (task.type == .folderActivity && (task.params.minWords ?? 0) > 0) {
-            ProgressRing(progress: {
+        } else if task.type == .appTime || task.type == .appLimit || (task.type == .folderActivity && (task.params.minWords ?? 0) > 0) {
+            let p: Double = {
                 if case let .inProgress(p) = status { return p }
                 return 0
-            }())
+            }()
+            // For limits the ring is time used, so it warms up as you near the limit.
+            ProgressRing(progress: p, color: task.type == .appLimit && p >= 0.8 ? Theme.blush : Theme.green)
         } else if !model.isSupported(task) {
             Text("auto · soon")
                 .font(Theme.mono(10))
@@ -119,13 +125,14 @@ private struct TaskRow: View {
 
 private struct ProgressRing: View {
     let progress: Double
+    var color: Color = Theme.green
 
     var body: some View {
         ZStack {
             Circle().stroke(Theme.muted.opacity(0.3), lineWidth: 2.5)
             Circle()
                 .trim(from: 0, to: min(max(progress, 0), 1))
-                .stroke(Theme.green, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                .stroke(color, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
                 .rotationEffect(.degrees(-90))
         }
         .frame(width: 16, height: 16)
