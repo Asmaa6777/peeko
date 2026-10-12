@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Regenerates Resources/AppIcon.icns and docs/assets/icon.png from scripts/make-icon.swift.
+# Regenerates Resources/AppIcon.icns, docs/assets/icon.png and docs/assets/icon-1024.png from scripts/make-icon.swift.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -19,5 +19,6 @@ done
 iconutil -c icns "$ICONSET" -o Resources/AppIcon.icns
 mkdir -p docs/assets
 sips -z 256 256 "$WORK/icon-1024.png" --out docs/assets/icon.png >/dev/null
+cp "$WORK/icon-1024.png" docs/assets/icon-1024.png
 
-echo "Wrote Resources/AppIcon.icns and docs/assets/icon.png"
+echo "Wrote Resources/AppIcon.icns, docs/assets/icon.png and docs/assets/icon-1024.png"

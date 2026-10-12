@@ -6,7 +6,7 @@
 |---|---|
 | `make app` | `build/Peeko.app`, ad-hoc signed |
 | `make dmg` | `build/Peeko-<version>.dmg` (the app plus an Applications shortcut) and a `.sha256` file next to it |
-| `make icon` | Regenerates `Resources/AppIcon.icns` and `docs/assets/icon.png` from `scripts/make-icon.swift` |
+| `make icon` | Regenerates `Resources/AppIcon.icns`, `docs/assets/icon.png` and the full-size `docs/assets/icon-1024.png` from `scripts/make-icon.swift` |
 | `make social` | Regenerates `docs/assets/social-preview.png` (1280×640) from `scripts/make-social.swift`. Upload it in the repo's **Settings → General → Social preview**; GitHub has no API for this. |
 
 The icon is drawn in code from the brand geometry: Peeko hanging from a menu bar strip on a Night-colored body. The generated `.icns` is committed, so builds don't need to redraw it. Change the script and rerun `make icon` to update it.
