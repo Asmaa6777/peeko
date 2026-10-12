@@ -32,7 +32,7 @@ struct CatalogView: View {
         HStack(spacing: 12) {
             TaskIcon(task.icon, size: 14)
                 .frame(width: 22)
-                .foregroundStyle(Theme.green)
+                .foregroundStyle(TaskCategory(task).color)
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.title)
                     .font(Theme.rowTitle)
