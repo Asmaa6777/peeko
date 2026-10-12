@@ -77,11 +77,16 @@ public enum DayKey {
         return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
     }
 
+    /// Midnight at the start of a `yyyy-MM-dd` day in the calendar's time zone.
+    public static func startOfDay(_ key: String, calendar: Calendar = .current) -> Date? {
+        let parts = key.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3 else { return nil }
+        return calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2]))
+    }
+
     /// The last second of a `yyyy-MM-dd` day in the calendar's time zone.
     public static func endOfDay(_ key: String, calendar: Calendar = .current) -> Date? {
-        let parts = key.split(separator: "-").compactMap { Int($0) }
-        guard parts.count == 3,
-              let start = calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2])),
+        guard let start = startOfDay(key, calendar: calendar),
               let next = calendar.date(byAdding: .day, value: 1, to: start)
         else { return nil }
         return next.addingTimeInterval(-1)

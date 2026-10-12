@@ -5,76 +5,320 @@
       "id": "read-pdfs",
       "title": "Read for 30 minutes",
       "type": "appTime",
-      "params": { "bundleIDs": ["com.apple.Preview"], "minutes": 30, "idleCutoffSeconds": 120 },
+      "params": {
+        "bundleIDs": [
+          "com.apple.Preview",
+          "com.apple.iBooksX",
+          "com.amazon.Lassen"
+        ],
+        "minutes": 30,
+        "idleCutoffSeconds": 120
+      },
       "icon": "book"
     },
     {
       "id": "deep-work",
       "title": "Deep work for 90 minutes",
       "type": "appTime",
-      "params": { "bundleIDs": ["com.microsoft.VSCode", "com.apple.Terminal"], "minutes": 90, "idleCutoffSeconds": 120 },
+      "params": {
+        "bundleIDs": [
+          "com.microsoft.VSCode",
+          "com.apple.Terminal"
+        ],
+        "minutes": 90,
+        "idleCutoffSeconds": 120
+      },
       "icon": "laptopcomputer"
     },
     {
-      "id": "github-push",
-      "title": "Push to GitHub",
-      "type": "remoteCheck",
-      "params": { "source": "githubPush", "username": "" },
-      "icon": "arrow.up.circle"
+      "id": "focus-block",
+      "title": "One 50-minute focus block",
+      "type": "appTime",
+      "icon": "scope",
+      "params": {
+        "bundleIDs": [
+          "com.microsoft.VSCode",
+          "com.apple.Terminal",
+          "com.apple.dt.Xcode",
+          "com.googlecode.iterm2",
+          "dev.zed.Zed",
+          "com.todesktop.230313mzl4w4u92",
+          "md.obsidian"
+        ],
+        "minutes": 50,
+        "continuous": true,
+        "idleCutoffSeconds": 300
+      }
     },
     {
-      "id": "slept-on-time",
-      "title": "Slept on time",
-      "type": "activity",
-      "params": { "rule": "quietBetween", "from": "00:30", "until": "05:00" },
-      "icon": "moon.zzz"
+      "id": "music-practice",
+      "title": "Practice music for 30 minutes",
+      "type": "appTime",
+      "icon": "music.note",
+      "params": {
+        "bundleIDs": [
+          "com.apple.garageband10",
+          "com.apple.logic10",
+          "com.ableton.live"
+        ],
+        "minutes": 30,
+        "idleCutoffSeconds": 300
+      }
     },
     {
-      "id": "up-early",
-      "title": "Up before 8",
-      "type": "activity",
-      "params": { "rule": "startBetween", "from": "04:00", "until": "08:00" },
-      "icon": "sunrise"
+      "id": "design-practice",
+      "title": "Design for 30 minutes",
+      "type": "appTime",
+      "icon": "paintpalette",
+      "params": {
+        "bundleIDs": [
+          "com.figma.Desktop",
+          "com.bohemiancoding.sketch3"
+        ],
+        "minutes": 30,
+        "idleCutoffSeconds": 180
+      }
     },
     {
-      "id": "write-notes",
-      "title": "Write in your notes",
-      "type": "folderActivity",
-      "params": { "path": "", "extensions": ["md", "markdown", "txt"], "minWords": 0 },
-      "icon": "pencil.line"
-    },
-    {
-      "id": "write-300",
-      "title": "Write 300 words",
-      "type": "folderActivity",
-      "params": { "path": "", "extensions": ["md", "markdown", "txt"], "minWords": 300 },
-      "icon": "doc.text"
+      "id": "screen-time",
+      "title": "Under 8 hours of screen time",
+      "type": "appLimit",
+      "icon": "display",
+      "params": {
+        "bundleIDs": [],
+        "minutes": 480,
+        "idleCutoffSeconds": 120,
+        "doneNote": "stayed under 8 hours · nice",
+        "missedNote": "over 8 hours today · fresh start tomorrow"
+      }
     },
     {
       "id": "youtube-limit",
       "title": "Under 45 min of YouTube",
       "type": "appLimit",
       "params": {
-        "bundleIDs": ["com.apple.Safari", "com.google.Chrome", "company.thebrowser.Browser", "org.mozilla.firefox", "com.brave.Browser", "com.microsoft.edgemac"],
-        "titleContains": ["YouTube"],
+        "bundleIDs": [
+          "com.apple.Safari",
+          "com.google.Chrome",
+          "company.thebrowser.Browser",
+          "org.mozilla.firefox",
+          "com.brave.Browser",
+          "com.microsoft.edgemac"
+        ],
+        "titleContains": [
+          "YouTube"
+        ],
         "minutes": 45,
         "idleCutoffSeconds": 600
       },
       "icon": "play.rectangle"
     },
     {
-      "id": "gym",
-      "title": "Gym",
-      "type": "manual",
-      "params": {},
-      "icon": "dumbbell"
+      "id": "social-before-noon",
+      "title": "No social media before noon",
+      "type": "appLimit",
+      "icon": "hand.raised",
+      "params": {
+        "bundleIDs": [
+          "com.apple.Safari",
+          "com.google.Chrome",
+          "company.thebrowser.Browser",
+          "org.mozilla.firefox",
+          "com.brave.Browser",
+          "com.microsoft.edgemac"
+        ],
+        "titleContains": [
+          " / X",
+          "Instagram",
+          "Reddit",
+          "Facebook",
+          "TikTok"
+        ],
+        "minutes": 0,
+        "from": "00:00",
+        "until": "12:00",
+        "idleCutoffSeconds": 600,
+        "doneNote": "a social-free morning · nice",
+        "missedNote": "checked social before noon · no worries"
+      }
     },
     {
-      "id": "water",
-      "title": "Drink water",
-      "type": "manual",
-      "params": {},
-      "icon": "drop"
+      "id": "slept-on-time",
+      "title": "Slept on time",
+      "type": "activity",
+      "params": {
+        "rule": "quietBetween",
+        "from": "00:30",
+        "until": "05:00",
+        "doneNote": "looks like you slept on time",
+        "missedNote": "up late last night · no worries"
+      },
+      "icon": "moon.zzz"
+    },
+    {
+      "id": "up-early",
+      "title": "Up before 8",
+      "type": "activity",
+      "params": {
+        "rule": "startBetween",
+        "from": "04:00",
+        "until": "08:00",
+        "doneNote": "up and about at {time}",
+        "missedNote": "a slow morning · no worries"
+      },
+      "icon": "sunrise"
+    },
+    {
+      "id": "stopped-by-11",
+      "title": "Stopped working by 11 PM",
+      "type": "activity",
+      "icon": "moon.stars",
+      "params": {
+        "rule": "quietBetween",
+        "from": "23:00",
+        "until": "24:00",
+        "doneNote": "logged off by 11 · nice",
+        "missedNote": "worked past 11 · no worries"
+      }
+    },
+    {
+      "id": "lunch-away",
+      "title": "Lunch away from the screen",
+      "type": "activity",
+      "icon": "fork.knife",
+      "params": {
+        "rule": "gapBetween",
+        "from": "12:00",
+        "until": "15:00",
+        "gapMinutes": 30,
+        "doneNote": "had a proper lunch break",
+        "missedNote": "lunch at the desk · no worries"
+      }
+    },
+    {
+      "id": "took-breaks",
+      "title": "Took your breaks",
+      "type": "activity",
+      "icon": "figure.walk",
+      "params": {
+        "rule": "gapBetween",
+        "from": "09:00",
+        "until": "18:00",
+        "gapMinutes": 5,
+        "count": 4,
+        "doneNote": "took 4 breaks · nice",
+        "missedNote": "fewer breaks today · no worries"
+      }
+    },
+    {
+      "id": "write-notes",
+      "title": "Write in your notes",
+      "type": "folderActivity",
+      "params": {
+        "path": "",
+        "extensions": [
+          "md",
+          "markdown",
+          "txt"
+        ],
+        "minWords": 0
+      },
+      "icon": "pencil.line"
+    },
+    {
+      "id": "write-300",
+      "title": "Write 300 words",
+      "type": "folderActivity",
+      "params": {
+        "path": "",
+        "extensions": [
+          "md",
+          "markdown",
+          "txt"
+        ],
+        "minWords": 300
+      },
+      "icon": "doc.text"
+    },
+    {
+      "id": "daily-note",
+      "title": "Wrote today's daily note",
+      "type": "folderActivity",
+      "icon": "note.text",
+      "params": {
+        "path": "",
+        "extensions": [
+          "md",
+          "markdown",
+          "txt"
+        ],
+        "dailyNote": true
+      }
+    },
+    {
+      "id": "git-commit",
+      "title": "Committed code today",
+      "type": "gitCommits",
+      "icon": "chevron.left.forwardslash.chevron.right",
+      "params": {
+        "path": "",
+        "author": ""
+      }
+    },
+    {
+      "id": "github-push",
+      "title": "Push to GitHub",
+      "type": "remoteCheck",
+      "params": {
+        "source": "githubPush",
+        "username": ""
+      },
+      "icon": "github"
+    },
+    {
+      "id": "clean-desktop",
+      "title": "Clean Desktop by evening",
+      "type": "folderTidy",
+      "icon": "macwindow",
+      "params": {
+        "path": "~/Desktop",
+        "maxItems": 5,
+        "from": "17:00"
+      }
+    },
+    {
+      "id": "time-machine",
+      "title": "Backed up with Time Machine",
+      "type": "backup",
+      "icon": "clock.arrow.circlepath",
+      "params": {}
+    },
+    {
+      "id": "reminders-cleared",
+      "title": "Cleared today's Reminders",
+      "type": "reminders",
+      "icon": "checklist.checked",
+      "params": {}
+    },
+    {
+      "id": "published",
+      "title": "Published something",
+      "type": "remoteCheck",
+      "icon": "dot.radiowaves.up.forward",
+      "params": {
+        "source": "feed",
+        "url": ""
+      }
+    },
+    {
+      "id": "duolingo",
+      "title": "Did a Duolingo lesson",
+      "type": "remoteCheck",
+      "icon": "character.bubble",
+      "params": {
+        "source": "duolingo",
+        "username": ""
+      }
     }
   ]
 }

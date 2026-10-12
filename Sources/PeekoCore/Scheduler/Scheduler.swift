@@ -23,9 +23,13 @@ public final class Scheduler {
     @ObservationIgnored private let idle: any IdleTimeProvider
     @ObservationIgnored private let github: GitHubEventsClient
     @ObservationIgnored private let folders: FolderScanner
+    // Kept for the scheduler's lifetime so their caches (poll intervals, ETags) survive between ticks.
+    @ObservationIgnored private let fetcher: CachedFetcher
+    @ObservationIgnored private let git = GitScanner()
+    @ObservationIgnored private let reminders = RemindersReader()
     @ObservationIgnored private var lastSave: Date = .distantPast
     @ObservationIgnored private let calendar: Calendar
-    @ObservationIgnored private var activity = ActivityTracker()
+    @ObservationIgnored private var activity: ActivityTracker
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var observers: [(NotificationCenter, any NSObjectProtocol)] = []
 
@@ -34,6 +38,7 @@ public final class Scheduler {
         frontmost: any FrontmostAppProvider,
         idle: any IdleTimeProvider,
         github: GitHubEventsClient,
+        fetcher: CachedFetcher = CachedFetcher(http: URLSessionHTTPClient()),
         calendar: Calendar = .current,
         now: Date = .now
     ) {
@@ -42,7 +47,9 @@ public final class Scheduler {
         self.idle = idle
         self.github = github
         self.folders = FolderScanner(store: store)
+        self.fetcher = fetcher
         self.calendar = calendar
+        self.activity = ActivityTracker(calendar: calendar)
         self.record = store.loadDay(DayKey.string(for: now, calendar: calendar))
     }
 
@@ -110,19 +117,30 @@ public final class Scheduler {
     public func rolloverIfNeeded(now: Date) {
         let key = DayKey.string(for: now, calendar: calendar)
         guard key != record.day else { return }
-        finalizeLimits()
+        finalizeDay()
         record = store.loadDay(key)
     }
 
-    /// A "stay under" task that's still under its limit when the day ends counts as done for that day.
-    private func finalizeLimits() {
+    /// Settles the day that's ending, even if the Mac slept through midnight:
+    /// time-window tasks get their verdict, and limits still under their cap count as done.
+    private func finalizeDay() {
         guard let end = DayKey.endOfDay(record.day, calendar: calendar) else { return }
         var changed = false
-        for task in tasks where task.type == .appLimit {
-            switch record.statuses[task.id] {
-            case .failed, .done: continue
+        for task in tasks {
+            let settled: TaskStatus?
+            switch task.type {
+            case .activity:
+                let status = ActivityWindowVerifier(definition: task, calendar: calendar)
+                    .status(record: record, now: end.addingTimeInterval(1))
+                settled = status == .pending ? nil : status
+            case .appLimit:
+                let status = AppLimitVerifier(definition: task).status(record: record)
+                settled = status == .failed ? .failed : .done(at: end)
             default:
-                record.statuses[task.id] = .done(at: end)
+                settled = nil
+            }
+            if let settled, record.statuses[task.id] != settled {
+                record.statuses[task.id] = settled
                 changed = true
             }
         }
@@ -147,7 +165,10 @@ public final class Scheduler {
     private func evaluateAutomaticTasks(now: Date) async -> Bool {
         let day = record.day
         let context = VerifierContext(now: now, record: record)
-        let environment = VerifierEnvironment(githubUsername: githubUsername, github: github, folders: folders, calendar: calendar)
+        let environment = VerifierEnvironment(
+            githubUsername: githubUsername, github: github, folders: folders, calendar: calendar,
+            fetcher: fetcher, git: git, reminders: reminders
+        )
         let evaluated = tasks.filter { $0.type != .manual }
         var results: [String: TaskStatus] = [:]
         for task in evaluated {

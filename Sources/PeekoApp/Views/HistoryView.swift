@@ -5,7 +5,7 @@ struct HistoryView: View {
     @Environment(AppModel.self) private var model
 
     private let calendar = Calendar.current
-    private let weeks = 5
+    var weeks = 5
 
     var body: some View {
         let history = model.history
@@ -95,8 +95,7 @@ struct HistoryView: View {
         let streak = history.streak(for: task.id, today: today)
         let done = history.timesDone(task.id, inLast: 30, today: today)
         return HStack(spacing: 12) {
-            Image(systemName: task.icon)
-                .font(.system(size: 13))
+            TaskIcon(task.icon, size: 13)
                 .frame(width: 20)
                 .foregroundStyle(Theme.green)
             VStack(alignment: .leading, spacing: 2) {

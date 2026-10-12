@@ -33,12 +33,26 @@ public struct VerifierEnvironment: Sendable {
     public var github: GitHubEventsClient
     public var folders: FolderScanner
     public var calendar: Calendar
+    public var fetcher: CachedFetcher
+    public var git: GitScanner
+    public var reminders: RemindersReader
 
-    public init(githubUsername: String, github: GitHubEventsClient, folders: FolderScanner, calendar: Calendar) {
+    public init(
+        githubUsername: String,
+        github: GitHubEventsClient,
+        folders: FolderScanner,
+        calendar: Calendar,
+        fetcher: CachedFetcher = CachedFetcher(http: URLSessionHTTPClient()),
+        git: GitScanner = GitScanner(),
+        reminders: RemindersReader = RemindersReader()
+    ) {
         self.githubUsername = githubUsername
         self.github = github
         self.folders = folders
         self.calendar = calendar
+        self.fetcher = fetcher
+        self.git = git
+        self.reminders = reminders
     }
 }
 
@@ -46,10 +60,10 @@ public struct VerifierEnvironment: Sendable {
 public func isVerifiable(_ definition: TaskDefinition) -> Bool {
     switch definition.type {
     case .manual, .appTime: true
-    case .remoteCheck: definition.params.source == "githubPush"
+    case .remoteCheck: ["githubPush", "feed", "duolingo"].contains(definition.params.source ?? "")
     case .activity: ActivityWindowVerifier.rules.contains(definition.params.rule ?? "")
-    case .folderActivity: true
-    case .appLimit: (definition.params.minutes ?? 0) > 0
+    case .folderActivity, .gitCommits, .backup, .reminders, .folderTidy: true
+    case .appLimit: definition.params.minutes != nil
     }
 }
 
@@ -61,6 +75,10 @@ public func makeVerifier(for definition: TaskDefinition, environment: VerifierEn
         return ManualVerifier(definition: definition)
     case .appTime:
         return AppTimeVerifier(definition: definition)
+    case .remoteCheck where definition.params.source == "feed":
+        return FeedVerifier(definition: definition, fetcher: environment.fetcher, calendar: environment.calendar)
+    case .remoteCheck where definition.params.source == "duolingo":
+        return DuolingoVerifier(definition: definition, fetcher: environment.fetcher, calendar: environment.calendar)
     case .remoteCheck:
         let own = definition.params.username ?? ""
         return GitHubPushVerifier(
@@ -75,5 +93,13 @@ public func makeVerifier(for definition: TaskDefinition, environment: VerifierEn
         return FolderActivityVerifier(definition: definition, scanner: environment.folders, calendar: environment.calendar)
     case .appLimit:
         return AppLimitVerifier(definition: definition)
+    case .gitCommits:
+        return GitCommitsVerifier(definition: definition, scanner: environment.git, calendar: environment.calendar)
+    case .backup:
+        return BackupVerifier(definition: definition, calendar: environment.calendar)
+    case .reminders:
+        return RemindersVerifier(definition: definition, reader: environment.reminders, calendar: environment.calendar)
+    case .folderTidy:
+        return FolderTidyVerifier(definition: definition, calendar: environment.calendar)
     }
 }

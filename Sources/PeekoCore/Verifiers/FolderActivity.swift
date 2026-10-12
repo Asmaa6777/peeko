@@ -3,6 +3,8 @@ import Foundation
 public struct FolderScanResult: Equatable, Sendable {
     public var firstEditToday: Date?
     public var wordsAdded: Int
+    /// When a file named with today's date (e.g. 2026-10-12.md) was last modified, if one exists.
+    public var dailyNote: Date?
 }
 
 /// Watches a notes folder by rescanning it at most once a minute.
@@ -62,6 +64,10 @@ public actor FolderScanner {
         var savedChanged = false
 
         let dayStart = calendar.startOfDay(for: now)
+        let dailyNote = files
+            .filter { ($0.path as NSString).lastPathComponent.contains(day) }
+            .map(\.modified)
+            .max()
         var added = 0
         var firstEdit: Date?
         for file in files where file.modified >= dayStart {
@@ -92,7 +98,7 @@ public actor FolderScanner {
             try? store.save(all)
         }
 
-        let result = FolderScanResult(firstEditToday: firstEdit, wordsAdded: added)
+        let result = FolderScanResult(firstEditToday: firstEdit, wordsAdded: added, dailyNote: dailyNote)
         states[taskID] = State(day: day, lastScan: now, result: result, counts: counts)
         return result
     }
@@ -152,6 +158,9 @@ public struct FolderActivityVerifier: Verifier {
               let result = await scanner.scan(taskID: definition.id, folder: path, extensions: p.extensions, now: context.now, calendar: calendar)
         else { return .pending }
 
+        if p.dailyNote == true {
+            return result.dailyNote.map { .done(at: $0) } ?? .pending
+        }
         let target = p.minWords ?? 0
         if target <= 0 { return result.firstEditToday.map { .done(at: $0) } ?? .pending }
         if result.wordsAdded >= target { return .done(at: context.now) }

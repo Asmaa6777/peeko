@@ -2,9 +2,13 @@
 
 # peeko
 
+[![CI](https://github.com/STACK-42/peeko/actions/workflows/ci.yml/badge.svg)](https://github.com/STACK-42/peeko/actions/workflows/ci.yml)
+
 A small menu bar app for macOS that keeps your daily list and ticks things off by itself. **[peeko.stack42.tech](https://peeko.stack42.tech)**
 
-Peeko hangs from the top of your screen and peeks at what you're doing. Keep a PDF open in Preview for half an hour and "Read for 30 minutes" ticks itself. Push to GitHub and that one goes green as well. For the things it can't see, like the gym or drinking water, you tap them yourself.
+Peeko hangs from the top of your screen and peeks at what you're doing. Keep a PDF open in Preview for half an hour and "Read for 30 minutes" ticks itself. Push to GitHub and that one goes green as well. Log off by 11 and it notices that too.
+
+It isn't another to-do list. Everything in its catalog is something your Mac can actually check, so you don't spend the evening ticking boxes. (You can still add a few of your own if you want.)
 
 It isn't there to police you. It's more like a little green creature that notices when you got something done and looks pleased about it.
 
@@ -12,13 +16,16 @@ It isn't there to police you. It's more like a little green creature that notice
 
 Early days. What works right now:
 
-- the menu bar icon and popover, with a **Today** list and a **Catalog** of presets
+- the menu bar icon and popover, with a **Today** list and a **Catalog** of presets, plus a full window when you want more room
 - manual tasks, plus your own custom ones
 - tasks that count time in an app, like reading in Preview or deep work in your editor, including ones you set up yourself
 - a daily "did I push to GitHub?" check
-- "slept on time" (no screen time between 00:30 and 05:00) and "up before 8" (first on the Mac before 8 AM)
+- "slept on time", "up before 8", "stopped working by 11", "lunch away from the screen" and "took your breaks", all from when you were actually at the keyboard
 - "write in your notes" and "write 300 words", watching a notes folder or Obsidian vault you pick
-- "stay under" limits, like under 45 minutes of YouTube or 30 minutes in Discord
+- "stay under" limits, like under 45 minutes of YouTube, under 8 hours of screen time, or no social media before noon
+- a 50-minute focus block in your editor, without wandering off
+- "committed code today" across your local repos, "wrote today's daily note", a tidy Desktop, a Time Machine backup, and cleared Reminders
+- "published something" for any blog or newsletter with an RSS feed, and a Duolingo lesson
 - a note when Peeko ticks something off for you, and an optional evening reminder if anything's left
 - a gentle nudge to get up and walk for 5 minutes after every hour at the screen (stepping away for 5 minutes resets it)
 - a History tab with your streak, a five-week calendar, and how often you did each task

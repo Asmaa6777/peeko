@@ -81,11 +81,21 @@ private struct TaskRow: View {
             Text(TaskDetail.missed(task))
         } else if task.needsWindowTitle && !model.accessibilityTrusted {
             Text("needs Accessibility · allow in Settings")
+        } else if task.type == .appLimit, task.params.minutes == 0 {
+            Text("so far so good · until \(task.params.until ?? "noon")")
         } else if task.type == .appLimit, case let .inProgress(p) = status, let limit = task.params.minutes {
-            Text("\(Int((p * Double(limit)).rounded(.down))) of \(limit) min used · \(TaskDetail.limitTarget(task).dropFirst(3))")
+            let used = Int((p * Double(limit)).rounded(.down))
+            Text("\(TaskDetail.duration(used)) of \(TaskDetail.duration(limit)) used · \(TaskDetail.limitTarget(task).dropFirst(3))")
+        } else if task.type == .appTime, task.params.continuous == true, case .inProgress = status, let target = task.params.minutes {
+            Text("best run \(model.accumulatedMinutes(for: task)) of \(target) min")
+        } else if task.type == .folderTidy {
+            let count = FolderTidyVerifier.itemCount(task.params.path)
+            Text(count.map { "\($0) things on the Desktop now · aim for \(task.params.maxItems ?? 5)" } ?? TaskDetail.describe(task))
         } else if task.type == .folderActivity, case let .inProgress(p) = status, let target = task.params.minWords {
             Text("\(Int((p * Double(target)).rounded())) of \(target) words · \(TaskDetail.folderName(task) ?? "notes")")
-        } else if task.type == .remoteCheck {
+        } else if task.type == .reminders && !RemindersReader.isAuthorized {
+            Text("needs Reminders access · switch it off and on in Catalog")
+        } else if task.type == .remoteCheck && task.params.source == "githubPush" {
             let username = model.githubUsername(for: task)
             Text(username.isEmpty ? "add your GitHub username in Settings" : model.githubProblem ?? "checking… · @\(username)")
         } else if case .inProgress = status, let target = task.params.minutes {

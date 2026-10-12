@@ -28,10 +28,14 @@ Every task is **one verifier type plus parameters**:
 |---|---|---|
 | `manual` | You tick it | done |
 | `appTime` | Adds up active minutes while one of the given apps is in front | done |
-| `remoteCheck` | Polls an outside source (`githubPush`) | done |
+| `remoteCheck` | Polls an outside source: `githubPush`, `feed` (RSS/Atom item dated today), `duolingo` (streak ends today) | done |
 | `activity` | Judges a time window against today's activity stretches (`quietBetween`, `startBetween`) | done |
 | `folderActivity` | Watches a notes folder: any edit today, or `minWords` added today | done |
-| `appLimit` | Stay under N active minutes in an app (optionally only while the window title matches) | done |
+| `appLimit` | Stay under N active minutes in an app, any app if `bundleIDs` is empty, optionally only while the window title matches and only inside a `from`–`until` window (a 0-minute limit means "none") | done |
+| `gitCommits` | A commit today by `author` in any git repo under `path` (two levels deep), via `git log` | done |
+| `backup` | Time Machine's latest `SnapshotDates` entry is today | done |
+| `reminders` | Something completed today and nothing due today left open (EventKit) | done |
+| `folderTidy` | At most `maxItems` visible items in `path` (Desktop) after `from` | done |
 
 Built-in presets live in `Resources/catalog.json`. Custom tasks use the same shape, with ids that start with `custom-`.
 
@@ -99,6 +103,15 @@ Every tick where the last input was within 2 minutes, the scheduler passes the m
 
 `failed` is shown gently ("up late last night · no worries"). It counts as settled, not left, for the evening reminder and the overall mood. Peeko only sees the Mac, and only while it's running.
 
+## More rules worth knowing
+
+- **Gaps (`gapBetween`)**: breaks are gaps between activity spans inside the window, of at least `gapMinutes`, `count` times. Time before the day's first activity isn't a break; a gap still in progress counts.
+- **Continuous runs (`appTime` + `continuous`)**: `ActivityTracker` keeps a per-task run in memory. Matching ticks extend it; once you've been away longer than `runGrace` (60s) it resets. Sleep (`pause()`) ends it. `accumulatedSeconds` holds the *best* run, so `AppTimeVerifier` works unchanged.
+- **Day settling**: on rollover, `Scheduler.finalizeDay()` evaluates `activity` tasks with `now` = the end of that day (so "stopped by 11" settles even if the Mac slept), and marks limits still under their cap as done.
+- **Copy lives in data**: `params.doneNote` / `missedNote` (with `{time}`) let a preset speak in its own words. `TaskDetail` falls back to generic lines.
+- **Shared caches**: `CachedFetcher` (feeds, Duolingo; ETag / Last-Modified, per-URL interval and problem text), `GitScanner` (5-minute cache, never calls `/usr/bin/git`, which would pop the developer-tools installer) and `RemindersReader` live on the `Scheduler` for its lifetime and reach verifiers through `VerifierEnvironment`.
+- **Setup on switch-on**: `AppModel.setup(for:)` says what a preset needs (a folder, a feed link, a username); `PresetToggle` asks with `PickedFolder` / `AskText`, Reminders asks for EventKit access, and title-filtered limits ask for Accessibility. Presets that no longer ship stay removable under "Your tasks".
+
 ## Notes folder
 
 `FolderActivityVerifier` asks the shared `FolderScanner` actor, which rescans a folder at most once a minute. It skips hidden folders (`.obsidian`, `.git`, `.trash`), packages, files over 5 MB, and extensions other than `md` / `markdown` / `txt`.
@@ -162,6 +175,7 @@ The scheduler moves to a new day file on every tick, on `NSCalendarDayChanged`, 
   - Banners show even while the popover is open.
 - **Onboarding** replaces the tabs on first launch, until `hasCompletedOnboarding`: welcome, then the notification permission (with a reason), then an optional GitHub username. The tab bar stays in the layout, invisible, so the panel height doesn't change.
 - **`RootView`** draws the header (face, wordmark, `done / total`, streak), the Today / Catalog / History / Settings tabs, and the footer. The content area has a **fixed height**: a `MenuBarExtra` window that resizes when you switch tabs drifts away from the menu bar.
+- **`MainWindowView`** is a second scene (`Window(id: "main")`, hidden title bar), opened from the popover footer with `openWindow`. It shows a sidebar (face, the four sections with ⌘1–4, today's count and streak) and the same `TodayView` / `CatalogView` / `HistoryView(weeks: 20)` / `SettingsView` in a wider scroll column, except Catalog, which uses `CatalogGridView`: a search field (⌘F, matching title, description and category), `TaskCategory` chips derived from the verifier type, and an adaptive `LazyVGrid` of cards. The popover keeps the compact `CatalogView` list. Both share `PresetToggle` (including the folder picker for writing presets), `DeleteTaskButton` and `ManualTaskForm`. Its `onAppear` switches the activation policy to `.regular` (Dock icon, ⌘Tab), and `onDisappear` switches back to `.accessory`. `LSUIElement` keeps it menu-bar-only at launch; the window isn't opened automatically.
 - **`FaceView`** draws Peeko from the brand file's 72×60 geometry. Status maps to a face: pending or failed → *dozing*, in progress → *looking*, done → *beaming*.
 - **`MenuBarIcon`** draws an eyes-only **template** `NSImage`, so macOS tints it for light and dark menu bars. It shows the day's overall mood: nothing done → dozing, some progress → looking, everything done → beaming.
 

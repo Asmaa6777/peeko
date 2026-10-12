@@ -10,6 +10,7 @@ enum Tab: String, CaseIterable {
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.openWindow) private var openWindow
     @ViewState private var tab: Tab = .today
 
     var body: some View {
@@ -126,6 +127,17 @@ struct RootView: View {
                 .font(Theme.mono())
                 .foregroundStyle(Theme.muted)
             Spacer()
+            Button {
+                openWindow(id: MainWindowView.id)
+                NSApp.activate()
+            } label: {
+                Label("Open window", systemImage: "arrow.up.left.and.arrow.down.right")
+            }
+            .buttonStyle(.plain)
+            .font(Theme.mono())
+            .foregroundStyle(Theme.muted)
+            .keyboardShortcut("o")
+            .padding(.trailing, 12)
             Button("Quit") { NSApplication.shared.terminate(nil) }
                 .buttonStyle(.plain)
                 .font(Theme.mono())

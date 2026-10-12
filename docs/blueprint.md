@@ -47,7 +47,7 @@ Built-in presets ship as a bundled `catalog.json`. User tasks are saved the same
   "title": "Push to GitHub",
   "type": "remoteCheck",
   "params": { "source": "githubPush", "username": "" },
-  "icon": "arrow.up.circle"
+  "icon": "github"
 }
 ```
 

@@ -7,6 +7,10 @@ public enum VerifierType: String, Codable, Hashable, Sendable {
     case appLimit
     case activity
     case folderActivity
+    case gitCommits
+    case backup
+    case reminders
+    case folderTidy
 }
 
 public struct TaskParams: Codable, Hashable, Sendable {
@@ -26,6 +30,22 @@ public struct TaskParams: Codable, Hashable, Sendable {
     public var path: String?
     public var extensions: [String]?
     public var minWords: Int?
+    /// `folderActivity`: pass when a file named with today's date (yyyy-MM-dd) exists.
+    public var dailyNote: Bool?
+    /// `appTime`: count the longest unbroken run instead of the total.
+    public var continuous: Bool?
+    /// `activity` "gapBetween": breaks of at least `gapMinutes`, `count` times.
+    public var gapMinutes: Int?
+    public var count: Int?
+    /// `folderTidy`: at most this many items.
+    public var maxItems: Int?
+    /// `remoteCheck` "feed": an RSS or Atom URL.
+    public var url: String?
+    /// `gitCommits`: only commits by this email (empty = anyone).
+    public var author: String?
+    /// Status lines in the task's own words; "{time}" becomes the time.
+    public var doneNote: String?
+    public var missedNote: String?
 
     public init(
         bundleIDs: [String]? = nil,
@@ -39,7 +59,16 @@ public struct TaskParams: Codable, Hashable, Sendable {
         until: String? = nil,
         path: String? = nil,
         extensions: [String]? = nil,
-        minWords: Int? = nil
+        minWords: Int? = nil,
+        dailyNote: Bool? = nil,
+        continuous: Bool? = nil,
+        gapMinutes: Int? = nil,
+        count: Int? = nil,
+        maxItems: Int? = nil,
+        url: String? = nil,
+        author: String? = nil,
+        doneNote: String? = nil,
+        missedNote: String? = nil
     ) {
         self.bundleIDs = bundleIDs
         self.minutes = minutes
@@ -53,6 +82,15 @@ public struct TaskParams: Codable, Hashable, Sendable {
         self.path = path
         self.extensions = extensions
         self.minWords = minWords
+        self.dailyNote = dailyNote
+        self.continuous = continuous
+        self.gapMinutes = gapMinutes
+        self.count = count
+        self.maxItems = maxItems
+        self.url = url
+        self.author = author
+        self.doneNote = doneNote
+        self.missedNote = missedNote
     }
 }
 

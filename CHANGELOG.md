@@ -8,6 +8,23 @@ All notable changes to Peeko are listed here. The format follows [Keep a Changel
 
 - "Stay under" tasks: keep time in an app (or on a site) below a limit. Ships with "Under 45 min of YouTube". The ring shows time used and turns pink near the limit. Going over marks it missed for the day; staying under counts as done when the day ends.
 - The custom app-time form can now be "at least" or "at most".
+- A full window: "Open window" in the popover (⌘O) opens Peeko in a resizable window that can go full screen. It has a sidebar for Today, Catalog, History (20 weeks) and Settings, switched with ⌘1–4. While it's open, Peeko shows in the Dock and ⌘Tab. Its Catalog is a card grid with a search bar (⌘F) and category filters (time in apps, limits, writing, sleep & mornings, online, tap it yourself).
+- New presets, all things your Mac can check:
+  - "Stopped working by 11 PM", "Lunch away from the screen" (a 30-minute break between 12 and 3) and "Took your breaks" (four 5-minute breaks between 9 and 6), from your keyboard and mouse activity.
+  - "Under 8 hours of screen time" and "No social media before noon".
+  - "One 50-minute focus block": 50 minutes straight in your editor; a quick glance elsewhere is fine.
+  - "Practice music" (GarageBand, Logic, Ableton) and "Design" (Figma, Sketch); "Read for 30 minutes" now also counts Books and Kindle.
+  - "Wrote today's daily note", "Committed code today" (your local git repos), "Clean Desktop by evening", "Backed up with Time Machine" and "Cleared today's Reminders".
+  - "Published something" (any RSS or Atom feed) and "Did a Duolingo lesson".
+- Time-window tasks are settled when the day ends, even if your Mac slept through midnight.
+
+### Removed
+
+- The "Gym" and "Drink water" presets: Peeko can't check them, and the catalog is for things it can. If you had them on, they stay under "Your tasks" until you remove them.
+
+### Added (continued)
+
+- When the GitHub check can't get an answer, the task says why (offline or blocked, unknown username, rate limit) instead of "checking…".
 - Website limits read the front window's title, which needs Accessibility permission. Peeko asks only when you turn such a task on. Whole-app limits need no permission.
 
 ## [0.2.0] - 2026-10-10

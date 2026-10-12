@@ -96,14 +96,34 @@ struct PickedApp: Identifiable, Hashable {
 
 enum PickedFolder {
     @MainActor
-    static func choose() -> URL? {
+    static func choose(message: String) -> URL? {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
         panel.prompt = "Watch this folder"
-        panel.message = "Pick your notes folder or Obsidian vault. Peeko only reads .md and .txt files in it."
+        panel.message = message
         NSApp.activate()
         return panel.runModal() == .OK ? panel.url : nil
+    }
+}
+
+/// A small text prompt (a username, a feed link) shown when a preset needs one.
+enum AskText {
+    @MainActor
+    static func ask(title: String, message: String, placeholder: String) -> String? {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = message
+        alert.addButton(withTitle: "Add")
+        alert.addButton(withTitle: "Cancel")
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
+        field.placeholderString = placeholder
+        alert.accessoryView = field
+        alert.window.initialFirstResponder = field
+        NSApp.activate()
+        guard alert.runModal() == .alertFirstButtonReturn else { return nil }
+        let text = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty ? nil : text
     }
 }

@@ -2,6 +2,7 @@ import AppKit
 import Foundation
 import Observation
 import PeekoCore
+import EventKit
 import ServiceManagement
 import UniformTypeIdentifiers
 import UserNotifications
@@ -68,7 +69,11 @@ final class AppModel {
     }
 
     var tasks: [TaskDefinition] { taskList.tasks }
-    var customTasks: [TaskDefinition] { tasks.filter(\.isCustom) }
+    /// Your own tasks, plus any enabled task whose preset no longer ships (so it can still be removed).
+    var customTasks: [TaskDefinition] {
+        let presetIDs = Set(presets.map(\.id))
+        return tasks.filter { $0.isCustom || !presetIDs.contains($0.id) }
+    }
     var lastError: String? { localError ?? scheduler.lastSaveError }
 
     func status(for task: TaskDefinition) -> TaskStatus {
@@ -149,21 +154,66 @@ final class AppModel {
         }
     }
 
-    func needsFolder(_ preset: TaskDefinition) -> Bool {
-        preset.type == .folderActivity && (preset.params.path ?? "").isEmpty
+    /// What a preset needs from you before it can be switched on.
+    enum Setup {
+        case folder(message: String)
+        case text(title: String, message: String, placeholder: String)
+    }
+
+    func setup(for preset: TaskDefinition) -> Setup? {
+        let p = preset.params
+        switch preset.type {
+        case .folderActivity where (p.path ?? "").isEmpty:
+            return .folder(message: "Pick your notes folder or Obsidian vault. Peeko only reads .md and .txt files in it.")
+        case .gitCommits where (p.path ?? "").isEmpty:
+            return .folder(message: "Pick the folder that holds your code. Peeko looks for git repos up to two levels down.")
+        case .remoteCheck where p.source == "feed" && (p.url ?? "").isEmpty:
+            return .text(title: "Which feed?", message: "Paste the RSS or Atom link of your blog, newsletter or channel.", placeholder: "https://yourblog.com/feed.xml")
+        case .remoteCheck where p.source == "duolingo" && (p.username ?? "").isEmpty:
+            return .text(title: "Your Duolingo username", message: "Your profile needs to be public. Peeko checks whether your streak was extended today.", placeholder: "username")
+        default:
+            return nil
+        }
+    }
+
+    /// Switches a preset on with what `setup(for:)` asked for.
+    func enable(_ preset: TaskDefinition, answer: String) {
+        guard !isEnabled(preset) else { return }
+        var task = preset
+        switch preset.type {
+        case .folderActivity:
+            task.params.path = answer
+        case .gitCommits:
+            task.params.path = answer
+            if (task.params.author ?? "").isEmpty { task.params.author = Self.gitEmail() }
+        case .remoteCheck where preset.params.source == "feed":
+            guard FeedVerifier.url(answer) != nil else {
+                localError = "That doesn't look like a feed link (it should start with https://)."
+                return
+            }
+            task.params.url = answer.trimmingCharacters(in: .whitespaces)
+        case .remoteCheck:
+            task.params.username = answer.trimmingCharacters(in: .whitespaces)
+        default:
+            break
+        }
+        taskList.tasks.append(task)
+        saveTaskList()
+    }
+
+    /// Your git email, so "Committed code today" only counts your own commits.
+    private static func gitEmail() -> String {
+        guard let git = GitScanner.git else { return "" }
+        return GitScanner.run(git, ["config", "--global", "user.email"]).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    func requestRemindersAccess() async -> Bool {
+        (try? await EKEventStore().requestFullAccessToReminders()) ?? false
     }
 
     /// The enabled copy carries user choices (like the folder), so show that one when it exists.
     func enabledCopy(of preset: TaskDefinition) -> TaskDefinition? {
         tasks.first { $0.id == preset.id }
-    }
-
-    func enable(_ preset: TaskDefinition, folder: URL) {
-        guard !isEnabled(preset) else { return }
-        var task = preset
-        task.params.path = folder.path
-        taskList.tasks.append(task)
-        saveTaskList()
     }
 
     func setEnabled(_ preset: TaskDefinition, _ enabled: Bool) {

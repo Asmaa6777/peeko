@@ -523,6 +523,188 @@ do {
     check(completed.isEmpty, "finishing a limit at midnight doesn't send a notification")
 }
 
+// MARK: - Catalog v3: windows, gaps, focus, local and online checks
+
+@MainActor func judgeDay(_ task: TaskDefinition, day: Int, spans: [ActivitySpan], now: Date) -> TaskStatus {
+    var record = DayRecord(day: DayKey.string(for: at(day, 12, 0), calendar: calendar))
+    record.activity = spans
+    return ActivityWindowVerifier(definition: task, calendar: calendar).status(record: record, now: now)
+}
+func span(_ d: Int, _ h1: Int, _ m1: Int, _ h2: Int, _ m2: Int) -> ActivitySpan {
+    var c = Calendar(identifier: .gregorian); c.timeZone = TimeZone(identifier: "Asia/Riyadh")!
+    let a = c.date(from: DateComponents(year: 2026, month: 10, day: d, hour: h1, minute: m1))!
+    let b = c.date(from: DateComponents(year: 2026, month: 10, day: d, hour: h2, minute: m2))!
+    return ActivitySpan(start: a, end: b)
+}
+
+group("Stopped working by 11 (quiet 23:00–24:00)")
+do {
+    let task = TaskDefinition(id: "off11", title: "off", type: .activity,
+                              params: TaskParams(rule: "quietBetween", from: "23:00", until: "24:00"), icon: "moon")
+    check(ActivityWindowVerifier.minutes("24:00") == 1440 && ActivityWindowVerifier.minutes("24:30") == nil, "24:00 means end of day")
+    check(judgeDay(task, day: 10, spans: [span(10, 20, 0, 22, 50)], now: at(10, 23, 30)) == .pending, "pending during the evening")
+    check(judgeDay(task, day: 10, spans: [span(10, 20, 0, 22, 50)], now: at(11, 0, 0)) == .done(at: at(11, 0, 0)), "nothing after 23:00 → done at midnight")
+    check(judgeDay(task, day: 10, spans: [span(10, 22, 0, 23, 20)], now: at(11, 0, 0)) == .failed, "working at 23:20 → missed")
+}
+
+group("Breaks between activity (gapBetween)")
+do {
+    let lunch = TaskDefinition(id: "lunch", title: "lunch", type: .activity,
+                               params: TaskParams(rule: "gapBetween", from: "12:00", until: "15:00", gapMinutes: 30), icon: "fork")
+    check(judgeDay(lunch, day: 10, spans: [span(10, 9, 0, 12, 10), span(10, 12, 50, 17, 0)], now: at(10, 18, 0)) == .done(at: at(10, 12, 40)),
+          "a 40-min gap from 12:10 → done at 12:40")
+    check(judgeDay(lunch, day: 10, spans: [span(10, 9, 0, 12, 10), span(10, 12, 30, 17, 0)], now: at(10, 18, 0)) == .failed,
+          "only a 20-min gap → missed after 15:00")
+    check(judgeDay(lunch, day: 10, spans: [span(10, 9, 0, 12, 10)], now: at(10, 12, 45)) == .done(at: at(10, 12, 40)),
+          "away right now for 35 min already counts")
+    check(judgeDay(lunch, day: 10, spans: [span(10, 13, 30, 17, 0)], now: at(10, 18, 0)) == .failed,
+          "before your first activity of the day isn't a break")
+
+    let breaks = TaskDefinition(id: "breaks", title: "breaks", type: .activity,
+                                params: TaskParams(rule: "gapBetween", from: "09:00", until: "18:00", gapMinutes: 5, count: 4), icon: "walk")
+    let day = [span(10, 9, 0, 10, 0), span(10, 10, 10, 11, 0), span(10, 11, 7, 12, 0), span(10, 12, 30, 14, 0), span(10, 14, 6, 17, 0)]
+    check(judgeDay(breaks, day: 10, spans: day, now: at(10, 18, 0)) == .done(at: at(10, 14, 5)), "fourth 5-min break at 14:00 → done at 14:05")
+    check(judgeDay(breaks, day: 10, spans: Array(day.prefix(3)) + [span(10, 12, 2, 17, 0)], now: at(10, 18, 0)) == .failed,
+          "only two real breaks → missed")
+}
+
+group("Limits: any app, time windows, zero, focus runs")
+do {
+    let screen = TaskDefinition(id: "screen", title: "screen", type: .appLimit,
+                                params: TaskParams(bundleIDs: [], minutes: 480), icon: "display")
+    let social = TaskDefinition(id: "social", title: "social", type: .appLimit,
+                                params: TaskParams(bundleIDs: ["com.google.Chrome"], minutes: 0, titleContains: ["Reddit"], from: "00:00", until: "12:00"), icon: "hand")
+    let focus = TaskDefinition(id: "focus", title: "focus", type: .appTime,
+                               params: TaskParams(bundleIDs: ["com.microsoft.VSCode"], minutes: 50, continuous: true), icon: "scope")
+    var tracker = ActivityTracker(calendar: calendar)
+    var record = DayRecord(day: "2026-10-10")
+    var now = at(10, 11, 58)
+    func tick(_ app: String, _ title: String? = nil) {
+        now = now.addingTimeInterval(10)
+        tracker.record(ActivitySample(now: now, frontmostBundleID: app, secondsSinceInput: 3, windowTitle: title),
+                       tasks: [screen, social, focus], into: &record)
+    }
+    tracker.record(ActivitySample(now: now, frontmostBundleID: "com.apple.Notes", secondsSinceInput: 3), tasks: [screen, social, focus], into: &record)
+    tick("com.apple.Notes")
+    check(record.accumulatedSeconds["screen"] == 10, "an empty app list counts any app")
+    check(AppLimitVerifier(definition: social).status(record: record) == .inProgress(progress: 0), "zero limit, nothing yet → still fine")
+    for _ in 0..<10 { tick("com.google.Chrome", "r/swift - Reddit") }   // 11:58:20 … 11:59:50
+    check(record.accumulatedSeconds["social"] == 100, "Reddit before noon counts toward a zero limit")
+    check(AppLimitVerifier(definition: social).status(record: record) == .failed, "any time over a zero limit → missed")
+    tick("com.google.Chrome", "r/swift - Reddit")
+    check(record.accumulatedSeconds["social"] == 100, "at 12:00 the window is closed")
+
+    for _ in 0..<30 { tick("com.microsoft.VSCode") }
+    check(record.accumulatedSeconds["focus"] == 300, "5 minutes straight in VS Code")
+    for _ in 0..<3 { tick("com.tinyspeck.slackmacgap") }
+    for _ in 0..<6 { tick("com.microsoft.VSCode") }
+    check(record.accumulatedSeconds["focus"] == 360, "a 30-second look at Slack doesn't break the run")
+    for _ in 0..<9 { tick("com.tinyspeck.slackmacgap") }
+    for _ in 0..<12 { tick("com.microsoft.VSCode") }
+    check(record.accumulatedSeconds["focus"] == 360, "90 seconds away starts a new run; the best run stays 6 min")
+}
+
+group("Finalizing the day at rollover")
+do {
+    let off11 = TaskDefinition(id: "off11", title: "off", type: .activity,
+                               params: TaskParams(rule: "quietBetween", from: "23:00", until: "24:00"), icon: "moon")
+    let screen = TaskDefinition(id: "screen", title: "screen", type: .appLimit, params: TaskParams(bundleIDs: [], minutes: 480), icon: "display")
+    let store = tempStore()
+    let idle = FakeIdle(3)
+    let scheduler = Scheduler(store: store, frontmost: FakeFrontmost("com.apple.Notes"), idle: idle, github: offlineGitHub(), calendar: calendar, now: at(10, 22, 0))
+    scheduler.tasks = [off11, screen]
+    await scheduler.tick(now: at(10, 22, 0))
+    idle.seconds = 4000
+    await scheduler.tick(now: at(11, 7, 0))
+    let yesterday = store.loadDay("2026-10-10")
+    check(yesterday.statuses["off11"] == .done(at: at(11, 0, 0)), "Mac slept at 22:00 → 'stopped by 11' settles as done at rollover")
+    check(yesterday.statuses["screen"] == .done(at: at(10, 23, 59, 59)), "screen time under 8 h → done for the day")
+}
+
+group("Local checks: daily note, tidy folder, Time Machine, git, Reminders")
+do {
+    let fm = FileManager.default
+    let vault = fm.temporaryDirectory.appendingPathComponent("peeko-daily-\(UUID())")
+    try! fm.createDirectory(at: vault.appendingPathComponent("Daily"), withIntermediateDirectories: true)
+    let note = TaskDefinition(id: "daily", title: "daily", type: .folderActivity, params: TaskParams(path: vault.path, dailyNote: true), icon: "note")
+    let env = VerifierEnvironment(githubUsername: "", github: offlineGitHub(), folders: FolderScanner(store: tempStore()), calendar: calendar)
+    check(await makeVerifier(for: note, environment: env)!.evaluate(context: .init(now: at(10, 9, 0), record: DayRecord(day: "2026-10-10"))) == .pending,
+          "no note for today yet")
+    let url = vault.appendingPathComponent("Daily/2026-10-10.md")
+    try! "today".write(to: url, atomically: true, encoding: .utf8)
+    try! fm.setAttributes([.modificationDate: at(10, 8, 30)], ofItemAtPath: url.path)
+    let env2 = VerifierEnvironment(githubUsername: "", github: offlineGitHub(), folders: FolderScanner(store: tempStore()), calendar: calendar)
+    check(await makeVerifier(for: note, environment: env2)!.evaluate(context: .init(now: at(10, 9, 5), record: DayRecord(day: "2026-10-10"))) == .done(at: at(10, 8, 30)),
+          "Daily/2026-10-10.md exists → done")
+
+    for i in 0..<3 { try! "x".write(to: vault.appendingPathComponent("file\(i).txt"), atomically: true, encoding: .utf8) }
+    try! "hidden".write(to: vault.appendingPathComponent(".DS_Store"), atomically: true, encoding: .utf8)
+    check(FolderTidyVerifier.itemCount(vault.path) == 4, "counts visible items only: Daily/ + 3 files, not .DS_Store")
+    let tidy = TaskDefinition(id: "tidy", title: "tidy", type: .folderTidy, params: TaskParams(from: "17:00", path: vault.path, maxItems: 4), icon: "sparkles")
+    let tidyVerifier = FolderTidyVerifier(definition: tidy, calendar: calendar)
+    check(await tidyVerifier.evaluate(context: .init(now: at(10, 12, 0), record: DayRecord(day: "2026-10-10"))) == .pending, "before 17:00 it doesn't count yet")
+    check(await tidyVerifier.evaluate(context: .init(now: at(10, 17, 30), record: DayRecord(day: "2026-10-10"))) == .done(at: at(10, 17, 30)), "4 items ≤ 4 after 17:00 → done")
+    try? fm.removeItem(at: vault)
+
+    let plist: [String: Any] = ["Destinations": [["SnapshotDates": [at(9, 22, 0), at(10, 3, 15)]], ["SnapshotDates": [at(8, 1, 0)]]]]
+    check(BackupVerifier.latestBackup(plist: plist) == at(10, 3, 15), "latest backup across destinations")
+
+    check(RemindersDay(completedToday: [at(10, 9, 0), at(10, 11, 0)], openDueToday: 0).status == .done(at: at(10, 11, 0)), "all due today done → cleared at the last one")
+    check(RemindersDay(completedToday: [at(10, 9, 0)], openDueToday: 1).status == .pending, "one still open → not yet")
+    check(RemindersDay(completedToday: [], openDueToday: 0).status == .pending, "nothing done at all doesn't count as cleared")
+
+    if let git = GitScanner.git {
+        let repo = fm.temporaryDirectory.appendingPathComponent("peeko-git-\(UUID())/proj")
+        try! fm.createDirectory(at: repo, withIntermediateDirectories: true)
+        func g(_ args: String...) { _ = GitScanner.run(git, ["-C", repo.path] + args) }
+        g("init", "-q")
+        try! "hi".write(to: repo.appendingPathComponent("a.txt"), atomically: true, encoding: .utf8)
+        g("add", ".")
+        g("-c", "user.name=Test", "-c", "user.email=me@example.com", "commit", "-q", "-m", "first")
+        let root = repo.deletingLastPathComponent().path
+        let scanner = GitScanner()
+        let mine = await scanner.firstCommitToday(root: root, author: "me@example.com", now: .now, calendar: .current)
+        check(mine != nil && Calendar.current.isDateInToday(mine!), "finds today's commit in a repo one level down")
+        let theirs = await GitScanner().firstCommitToday(root: root, author: "someone@else.com", now: .now, calendar: .current)
+        check(theirs == nil, "ignores commits by other authors")
+        try? fm.removeItem(atPath: root)
+    } else {
+        print("  - git not installed; skipping the git check")
+    }
+}
+
+group("Online checks: feeds and Duolingo")
+do {
+    let rss = """
+    <?xml version="1.0"?><rss version="2.0"><channel><title>Blog</title><pubDate>Sat, 10 Oct 2026 20:00:00 +0300</pubDate>
+    <item><title>Old</title><pubDate>Thu, 08 Oct 2026 10:00:00 +0300</pubDate></item>
+    <item><title>New</title><pubDate>Sat, 10 Oct 2026 09:30:00 +0300</pubDate></item>
+    </channel></rss>
+    """
+    check(FeedDates.parse(Data(rss.utf8)).count == 2, "reads item dates, not the channel's own date")
+    let atom = """
+    <feed xmlns="http://www.w3.org/2005/Atom"><updated>2026-10-10T12:00:00Z</updated>
+    <entry><title>Post</title><published>2026-10-10T06:15:00Z</published><updated>2026-10-10T07:00:00Z</updated></entry></feed>
+    """
+    check(FeedDates.parse(Data(atom.utf8)).min() == at(10, 9, 15), "Atom published date (06:15Z = 09:15 in UTC+3)")
+
+    let feedTask = TaskDefinition(id: "blog", title: "blog", type: .remoteCheck, params: TaskParams(source: "feed", url: "https://example.com/feed.xml"), icon: "rss")
+    let feedEnv = VerifierEnvironment(githubUsername: "", github: offlineGitHub(), folders: FolderScanner(store: tempStore()), calendar: calendar,
+                                      fetcher: CachedFetcher(http: FakeHTTP([.init(status: 200, body: rss, etag: nil)])))
+    check(await makeVerifier(for: feedTask, environment: feedEnv)!.evaluate(context: .init(now: at(10, 21, 0), record: DayRecord(day: "2026-10-10"))) == .done(at: at(10, 9, 30)),
+          "a post dated today → published")
+    check(FeedVerifier.url("ftp://nope") == nil && FeedVerifier.url("https://a.b/rss") != nil, "only http(s) feed URLs")
+
+    let duo = #"{"users":[{"streak":3971,"streakData":{"currentStreak":{"length":3971,"startDate":"2019-07-25","endDate":"2026-10-10"}}}]}"#
+    check(DuolingoVerifier.streakEndDate(Data(duo.utf8)) == "2026-10-10", "reads the streak's end date")
+    let duoTask = TaskDefinition(id: "duo", title: "duo", type: .remoteCheck, params: TaskParams(source: "duolingo", username: "luis"), icon: "duo")
+    let duoEnv = VerifierEnvironment(githubUsername: "", github: offlineGitHub(), folders: FolderScanner(store: tempStore()), calendar: calendar,
+                                     fetcher: CachedFetcher(http: FakeHTTP([.init(status: 200, body: duo, etag: nil)])))
+    check(await makeVerifier(for: duoTask, environment: duoEnv)!.evaluate(context: .init(now: at(10, 20, 0), record: DayRecord(day: "2026-10-10"))) == .done(at: at(10, 20, 0)),
+          "streak ends today → lesson done")
+    check(DuolingoVerifier.url(for: "bad name!") == nil, "rejects odd usernames")
+}
+
 // MARK: - History and streaks
 
 group("History and streaks")
