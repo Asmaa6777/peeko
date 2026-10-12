@@ -57,7 +57,8 @@ struct PresetToggle: View {
     let preset: TaskDefinition
 
     var body: some View {
-        Toggle("", isOn: Binding(get: { model.isEnabled(preset) }, set: set))
+        // A closure, not `set: toggle`: Swift 6.3 crashes building the thunk for a method reference here.
+        Toggle("", isOn: Binding(get: { model.isEnabled(preset) }, set: { toggle($0) }))
             .toggleStyle(.switch)
             .tint(Theme.green)
             .controlSize(.mini)
@@ -65,7 +66,7 @@ struct PresetToggle: View {
             .accessibilityLabel(preset.title)
     }
 
-    func set(_ on: Bool) {
+    func toggle(_ on: Bool) {
         guard on else { return model.setEnabled(preset, false) }
         switch model.setup(for: preset) {
         case .folder(let message):
