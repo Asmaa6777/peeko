@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Peeko · peeks in, ticks off</title>
-  <meta name="description" content="A small macOS menu bar app that keeps your daily list and ticks things off by itself. Local-first, no account.">
+  <title>Peeko · the to-do list that checks itself</title>
+  <meta name="description" content="Peeko is a daily list your Mac checks off for you: reading, focus, code, sleep, writing. If it can't be checked, it isn't on the list. Local-first macOS menu bar app.">
   <meta name="theme-color" content="#151515">
   <link rel="icon" type="image/png" href="assets/icon.png">
   <link rel="apple-touch-icon" href="assets/icon.png">
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://peeko.stack42.tech/">
-  <meta property="og:title" content="Peeko · peeks in, ticks off">
-  <meta property="og:description" content="A small macOS menu bar app that keeps your daily list and ticks things off by itself.">
+  <meta property="og:title" content="Peeko · the to-do list that checks itself">
+  <meta property="og:description" content="A daily list your Mac checks off for you. You do the thing; Peeko sees the evidence and ticks it.">
   <meta property="og:site_name" content="Peeko">
   <meta property="og:image" content="https://peeko.stack42.tech/assets/social-preview.png">
   <meta property="og:image:type" content="image/png">
@@ -20,8 +20,8 @@
   <meta property="og:image:height" content="640">
   <meta property="og:image:alt" content="Peeko, a green creature hanging from the macOS menu bar, next to the words: peeko, peeks in, ticks off.">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Peeko · peeks in, ticks off">
-  <meta name="twitter:description" content="A small macOS menu bar app that keeps your daily list and ticks things off by itself.">
+  <meta name="twitter:title" content="Peeko · the to-do list that checks itself">
+  <meta name="twitter:description" content="A daily list your Mac checks off for you. You do the thing; Peeko sees the evidence and ticks it.">
   <meta name="twitter:image" content="https://peeko.stack42.tech/assets/social-preview.png">
   <meta name="twitter:image:alt" content="Peeko, a green creature hanging from the macOS menu bar, next to the words: peeko, peeks in, ticks off.">
   <link rel="canonical" href="https://peeko.stack42.tech/">
@@ -66,8 +66,8 @@
       peeko
     </a>
     <nav class="menubar__nav" aria-label="Sections">
-      <a href="#what">What it is</a>
-      <a href="#examples">Examples</a>
+      <a href="#how">How it checks</a>
+      <a href="#proof">The list</a>
       <a href="#install">Install</a>
       <a href="https://github.com/STACK-42/peeko">GitHub</a>
     </nav>
@@ -85,11 +85,11 @@
       </svg>
 
       <div class="hero__copy">
-        <h1 class="wordmark">peeko</h1>
-        <p class="tagline">peeks in, ticks off</p>
+        <p class="wordmark" aria-hidden="true">peeko</p>
+        <h1 class="hero__title">The to-do list that <span>checks itself.</span></h1>
         <p class="hero__lede">
-          A small menu bar app for macOS that keeps your daily list and ticks things off by itself.
-          Spend half an hour in Preview and <em>Read for 30 minutes</em> ticks itself. Push to GitHub and that one goes green too.
+          You don't tick the boxes. Your Mac does. Read in Preview for half an hour, push some code, log off by 11:
+          Peeko sees the evidence and checks it off. If something can't be checked, it isn't on the list.
         </p>
 
         <div class="command" role="group" aria-label="Install command">
@@ -110,13 +110,23 @@
               <div class="panel__wordmark">peeko</div>
               <div class="panel__tagline">peeks in, ticks off</div>
             </div>
-            <div class="panel__count"><strong>2 / 4</strong><span>today</span></div>
+            <div class="panel__count"><strong>3 / 5</strong><span>today</span></div>
           </div>
-          <div class="panel__tabs"><span class="is-active">Today</span><span>Catalog</span><span>Settings</span></div>
+          <div class="panel__tabs"><span class="is-active">Today</span><span>Catalog</span><span>History</span><span>Settings</span></div>
           <ul class="panel__rows">
             <li class="row">
               <svg class="face face--30"><use href="#face-beaming"/></svg>
-              <div class="row__text"><span class="row__title is-done">Push to GitHub</span><span class="row__sub">Peeko saw that! · 09:41</span></div>
+              <div class="row__text"><span class="row__title is-done">Slept on time</span><span class="row__sub">looks like you slept on time</span></div>
+              <svg class="check" viewBox="0 0 20 20" aria-label="done"><circle cx="10" cy="10" r="9" fill="var(--green)"/><path d="M6 10.5l2.6 2.6L14 7.6" fill="none" stroke="var(--night)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </li>
+            <li class="row">
+              <svg class="face face--30"><use href="#face-beaming"/></svg>
+              <div class="row__text"><span class="row__title is-done">Committed code today</span><span class="row__sub">Peeko saw that! · 10:12</span></div>
+              <svg class="check" viewBox="0 0 20 20" aria-label="done"><circle cx="10" cy="10" r="9" fill="var(--green)"/><path d="M6 10.5l2.6 2.6L14 7.6" fill="none" stroke="var(--night)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </li>
+            <li class="row">
+              <svg class="face face--30"><use href="#face-beaming"/></svg>
+              <div class="row__text"><span class="row__title is-done">Push to GitHub</span><span class="row__sub">Peeko saw that! · 10:14</span></div>
               <svg class="check" viewBox="0 0 20 20" aria-label="done"><circle cx="10" cy="10" r="9" fill="var(--green)"/><path d="M6 10.5l2.6 2.6L14 7.6" fill="none" stroke="var(--night)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </li>
             <li class="row">
@@ -125,41 +135,150 @@
               <svg class="ring" viewBox="0 0 20 20" aria-label="60 percent"><circle cx="10" cy="10" r="7.5"/><circle cx="10" cy="10" r="7.5" class="ring__fill" style="--p:.6"/></svg>
             </li>
             <li class="row">
-              <svg class="face face--30"><use href="#face-beaming"/></svg>
-              <div class="row__text"><span class="row__title is-done">Slept on time</span><span class="row__sub">looks like you slept on time</span></div>
-              <svg class="check" viewBox="0 0 20 20" aria-label="done"><circle cx="10" cy="10" r="9" fill="var(--green)"/><path d="M6 10.5l2.6 2.6L14 7.6" fill="none" stroke="var(--night)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </li>
-            <li class="row">
               <svg class="face face--30"><use href="#face-dozing"/></svg>
-              <div class="row__text"><span class="row__title">Deep work for 90 minutes</span><span class="row__sub">90 min in VS Code / Terminal</span></div>
-              <svg class="ring" viewBox="0 0 20 20" aria-label="0 percent"><circle cx="10" cy="10" r="7.5"/></svg>
+              <div class="row__text"><span class="row__title">Stopped working by 11 PM</span><span class="row__sub">no screen time after 23:00</span></div>
             </li>
           </ul>
-          <div class="panel__footer"><span>v0.1.0</span><span>Quit</span></div>
+          <div class="panel__footer"><span>v0.2.0</span><span>Quit</span></div>
         </div>
 
         <div class="toast" aria-hidden="true">
           <strong>Peeko saw that!</strong>
-          <span>Push to GitHub ✓ · 2 of 4 done today</span>
+          <span>Push to GitHub ✓ · 3 of 5 done today</span>
         </div>
       </div>
     </section>
 
-    <section class="section" id="what">
-      <p class="eyebrow">What it is</p>
-      <h2>A little creature that notices when you got something done.</h2>
+    <section class="section" id="how">
+      <p class="eyebrow">How a box gets ticked</p>
+      <h2>You do the thing. Peeko checks. It ticks itself.</h2>
+      <ol class="steps">
+        <li class="step">
+          <span class="step__n">1</span>
+          <h3>You do the thing</h3>
+          <p>Read a paper in Preview for half an hour. You don't open Peeko, and you don't tick anything.</p>
+        </li>
+        <li class="step">
+          <span class="step__n">2</span>
+          <h3>Peeko looks at the evidence</h3>
+          <p>Every 10 seconds it notes which app is in front and whether you've touched the keyboard. That adds up to 30 active minutes in Preview.</p>
+          <code class="step__proof">Preview · active · 30:00</code>
+        </li>
+        <li class="step">
+          <span class="step__n">3</span>
+          <h3>It checks itself off</h3>
+          <p>The task goes green, Peeko beams, and you get one quiet note.</p>
+          <code class="step__proof">Peeko saw that! Read for 30 minutes ✓</code>
+        </li>
+      </ol>
+
+      <div class="compare" role="table" aria-label="Peeko compared with a regular to-do list">
+        <div class="compare__row compare__head" role="row">
+          <span role="columnheader"></span><span role="columnheader">A regular to-do list</span><span role="columnheader">Peeko</span>
+        </div>
+        <div class="compare__row" role="row"><span role="rowheader">Who ticks the box</span><span role="cell">You do</span><span role="cell">The evidence does</span></div>
+        <div class="compare__row" role="row"><span role="rowheader">What goes on it</span><span role="cell">Anything you can type</span><span role="cell">Only things your Mac can check, on purpose</span></div>
+        <div class="compare__row" role="row"><span role="rowheader">Keeping it up to date</span><span role="cell">Up to you, every evening</span><span role="cell">Updates itself every 10 seconds</span></div>
+        <div class="compare__row" role="row"><span role="rowheader">Ticking without doing</span><span role="cell">One click</span><span role="cell">You'd have to fool your own Mac</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="proof">
+      <p class="eyebrow">The list</p>
+      <h2>Every task comes with its proof.</h2>
+      <p class="section__lede">Pick what you want from the catalog. Each task knows exactly what counts as done, and checks it on its own.</p>
+      <div class="grid grid--3">
+        <article class="example">
+          <svg class="face face--40"><use href="#face-looking"/></svg>
+          <h3>Read for 30 minutes</h3>
+          <p class="proof"><b>Proof</b> Preview, Books or Kindle in front, with you active, for 30 minutes.</p>
+          <span class="tag">time in apps</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-beaming"/></svg>
+          <h3>One 50-minute focus block</h3>
+          <p class="proof"><b>Proof</b> 50 minutes straight in your editor. A glance at chat is fine; wandering off resets it.</p>
+          <span class="tag">time in apps</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-beaming"/></svg>
+          <h3>Committed code today</h3>
+          <p class="proof"><b>Proof</b> your local repos show a commit by your email since midnight. Private repos count.</p>
+          <span class="tag">on your Mac</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-beaming"/></svg>
+          <h3>Push to GitHub</h3>
+          <p class="proof"><b>Proof</b> a push in your public GitHub activity, dated today in your time zone.</p>
+          <span class="tag">online</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-looking"/></svg>
+          <h3>Write 300 words</h3>
+          <p class="proof"><b>Proof</b> word counts in your notes folder or Obsidian vault, compared with this morning.</p>
+          <span class="tag">writing</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-beaming"/></svg>
+          <h3>Wrote today's daily note</h3>
+          <p class="proof"><b>Proof</b> a note named for today, like <code>2026-10-12.md</code>, in your vault.</p>
+          <span class="tag">writing</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-beaming"/></svg>
+          <h3>Slept on time</h3>
+          <p class="proof"><b>Proof</b> no keyboard or mouse activity between 00:30 and 05:00.</p>
+          <span class="tag">sleep &amp; mornings</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-dozing"/></svg>
+          <h3>Stopped working by 11 PM</h3>
+          <p class="proof"><b>Proof</b> nothing on the Mac after 23:00. Settled at midnight, even if it's asleep.</p>
+          <span class="tag">sleep &amp; mornings</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-looking"/></svg>
+          <h3>Lunch away from the screen</h3>
+          <p class="proof"><b>Proof</b> a 30-minute gap in your activity between 12 and 3.</p>
+          <span class="tag">sleep &amp; mornings</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-looking"/></svg>
+          <h3>Under 8 hours of screen time</h3>
+          <p class="proof"><b>Proof</b> your active minutes across every app. The ring turns pink near the limit.</p>
+          <span class="tag">limits</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-beaming"/></svg>
+          <h3>No social media before noon</h3>
+          <p class="proof"><b>Proof</b> the titles of your browser windows. No X, Reddit or Instagram before 12:00.</p>
+          <span class="tag">limits</span>
+        </article>
+        <article class="example">
+          <svg class="face face--40"><use href="#face-looking"/></svg>
+          <h3>Published something</h3>
+          <p class="proof"><b>Proof</b> a post dated today in your blog's or newsletter's RSS feed.</p>
+          <span class="tag">online</span>
+        </article>
+      </div>
+      <p class="more">And more: up before 8, took your breaks, a tidy Desktop, a Time Machine backup, cleared Reminders, a Duolingo lesson, music and design practice, under 45 minutes of YouTube. Plus a gentle nudge to stand up after every hour at the screen.</p>
+    </section>
+
+    <section class="section" id="why">
+      <p class="eyebrow">Why only checkable things</p>
+      <h2>A list you tick yourself is easy to lie to. Even by accident.</h2>
       <div class="grid grid--3">
         <article class="card">
-          <h3>It peeks</h3>
-          <p>Peeko lives in the strip at the top of your screen. It looks at a few simple signals: which app is in front, whether you've touched the keyboard lately, and your public GitHub activity.</p>
+          <h3>If it can't be checked, it's not here</h3>
+          <p>"Drink water" sounds nice, but no Mac can see it. Peeko's catalog only has things it can actually check, so a green tick means something happened.</p>
         </article>
         <article class="card">
-          <h3>It ticks things off</h3>
-          <p>When a signal says you did the thing, the task goes green on its own. It's not a to-do list: everything in the catalog is something your Mac can check.</p>
+          <h3>Evidence, not policing</h3>
+          <p>The signals are evidence, not a lie detector. Leave a PDF open and nudge the mouse, and it'll count as reading. That's fine. Miss something, and Peeko just says "no worries".</p>
         </article>
         <article class="card">
-          <h3>It cheers, it doesn't police</h3>
-          <p>These signals are hints, not proof. Leave a PDF open and nudge the mouse, and it'll count as reading. That's fine. Peeko is a nudge, not a lie detector.</p>
+          <h3>Room for your own</h3>
+          <p>Some things only you know. You can add a few tasks of your own and tap them, but they live apart from the list your Mac checks.</p>
         </article>
       </div>
     </section>
@@ -175,11 +294,11 @@
         </figure>
         <figure class="face-card">
           <svg class="face face--96"><use href="#face-looking"/></svg>
-          <figcaption><strong>Looking</strong><span>On it. Time is adding up, or Peeko is checking GitHub.</span></figcaption>
+          <figcaption><strong>Looking</strong><span>Checking. Time is adding up, or Peeko is waiting for the evidence.</span></figcaption>
         </figure>
         <figure class="face-card">
           <svg class="face face--96"><use href="#face-beaming"/></svg>
-          <figcaption><strong>Beaming</strong><span>Done. Peeko saw that.</span></figcaption>
+          <figcaption><strong>Beaming</strong><span>Checked. Peeko saw that.</span></figcaption>
         </figure>
       </div>
       <ul class="swatches" aria-label="Colors">
@@ -190,91 +309,13 @@
       </ul>
     </section>
 
-    <section class="section" id="examples">
-      <p class="eyebrow">Examples</p>
-      <h2>Things Peeko can tick off for you.</h2>
-      <div class="grid grid--3">
-        <article class="example">
-          <svg class="face face--40"><use href="#face-looking"/></svg>
-          <h3>Read for 30 minutes</h3>
-          <p>Counts active time while Preview is in front. Idle time doesn't count, and a sleeping Mac never adds hours.</p>
-          <span class="tag">time in an app</span>
-        </article>
-        <article class="example">
-          <svg class="face face--40"><use href="#face-dozing"/></svg>
-          <h3>Deep work for 90 minutes</h3>
-          <p>Same idea, across VS Code and Terminal. Point it at any app you like, for as many minutes as you want.</p>
-          <span class="tag">time in an app</span>
-        </article>
-        <article class="example">
-          <svg class="face face--40"><use href="#face-beaming"/></svg>
-          <h3>Push to GitHub</h3>
-          <p>Checks your public activity every 10 minutes for a push made today, in your own time zone.</p>
-          <span class="tag">online check</span>
-        </article>
-        <article class="example">
-          <svg class="face face--40"><use href="#face-beaming"/></svg>
-          <h3>Slept on time</h3>
-          <p>No screen time between 00:30 and 05:00? Peeko figures you got some sleep. If you were up late, it just says "no worries".</p>
-          <span class="tag">activity window</span>
-        </article>
-        <article class="example">
-          <svg class="face face--40"><use href="#face-looking"/></svg>
-          <h3>Up before 8</h3>
-          <p>Your first stretch at the Mac after 4 AM starts before 8. All-nighters don't count as early mornings.</p>
-          <span class="tag">activity window</span>
-        </article>
-        <article class="example">
-          <svg class="face face--40"><use href="#face-looking"/></svg>
-          <h3>Write 300 words</h3>
-          <p>Point Peeko at your notes folder or Obsidian vault. It counts the words you add today, or just ticks when a note changes.</p>
-          <span class="tag">notes folder</span>
-        </article>
-        <article class="example">
-          <svg class="face face--40"><use href="#face-beaming"/></svg>
-          <h3>Committed code today</h3>
-          <p>Point Peeko at your code folder. A commit by you in any repo there counts, private repos included, and nothing leaves your Mac.</p>
-          <span class="tag">on your Mac</span>
-        </article>
-        <article class="example">
-          <svg class="face face--40"><use href="#face-looking"/></svg>
-          <h3>Under 45 min of YouTube</h3>
-          <p>Some goals are about doing less. The ring shows time used and turns pink near the limit. Stay under, and it counts as done.</p>
-          <span class="tag">stay under</span>
-        </article>
-        <article class="example">
-          <svg class="face face--40"><use href="#face-looking"/></svg>
-          <h3>Take a walk</h3>
-          <p>After an hour at the screen, Peeko suggests standing up for 5 minutes. Stepping away resets the count.</p>
-          <span class="tag">break reminder</span>
-        </article>
-      </div>
-
-      <div class="split">
-        <div>
-          <h3>Tasks are just data</h3>
-          <p>Every task is a type plus a few settings. Built-in presets live in a JSON file, and yours are saved the same way, so adding a new preset doesn't need any code.</p>
-        </div>
-        <pre class="code" aria-label="Example task definition"><code>{
-  <span class="k">"id"</span>: <span class="s">"read-pdfs"</span>,
-  <span class="k">"title"</span>: <span class="s">"Read for 30 minutes"</span>,
-  <span class="k">"type"</span>: <span class="s">"appTime"</span>,
-  <span class="k">"params"</span>: {
-    <span class="k">"bundleIDs"</span>: [<span class="s">"com.apple.Preview"</span>],
-    <span class="k">"minutes"</span>: <span class="n">30</span>,
-    <span class="k">"idleCutoffSeconds"</span>: <span class="n">120</span>
-  }
-}</code></pre>
-      </div>
-    </section>
-
     <section class="section" id="privacy">
       <p class="eyebrow">Privacy</p>
-      <h2>Everything stays on your Mac.</h2>
+      <h2>Checked on your Mac. Kept on your Mac.</h2>
       <div class="grid grid--3">
         <article class="card"><h3>No account</h3><p>Nothing to sign up for. No server, no analytics, no telemetry.</p></article>
         <article class="card"><h3>Plain files</h3><p>Your tasks and history are JSON in <code>~/Library/Application Support/Peeko/</code>. Read them, back them up, or delete them.</p></article>
-        <article class="card"><h3>One network call</h3><p>Only if you turn on the GitHub task: your public activity, every 10 minutes. Your notes folder and activity times never leave your Mac.</p></article>
+        <article class="card"><h3>Only what you turn on</h3><p>The online checks (GitHub, your feed, Duolingo) read public pages, and only if you switch them on. Your activity, notes and repos are checked on your Mac and never leave it.</p></article>
       </div>
     </section>
 
