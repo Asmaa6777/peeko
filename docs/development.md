@@ -46,6 +46,10 @@ To start fresh, quit Peeko and run `rm -rf ~/Library/Application\ Support/Peeko`
 
 If a file won't decode, the app renames it to `*.corrupt-<timestamp>` and starts empty rather than overwriting it.
 
+## CI
+
+`.github/workflows/ci.yml` runs on every push to `main` and every pull request, on GitHub's `macos-latest` runner: `swift build`, then `make check`, then `make app`. GitHub's runner uses its own Xcode and SDK, which can differ from the Command Line Tools here, so a red CI run after a green local build usually means a toolchain difference, not a logic bug. Releases (`release.yml`) and the website (`pages.yml`) are separate workflows.
+
 ## Toolchain quirks
 
 - **Use `@ViewState`, not `@State`.** In the macOS 27 SDK, `@State` is a macro whose plugin ships only with Xcode, so it fails to compile with Command Line Tools. `Sources/PeekoApp/ViewState.swift` aliases the plain property wrapper. `@Observable` is fine because its plugin ships with the toolchain.
