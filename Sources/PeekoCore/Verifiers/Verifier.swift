@@ -60,7 +60,7 @@ public struct VerifierEnvironment: Sendable {
 public func isVerifiable(_ definition: TaskDefinition) -> Bool {
     switch definition.type {
     case .manual, .appTime: true
-    case .remoteCheck: ["githubPush", "feed", "duolingo"].contains(definition.params.source ?? "")
+    case .remoteCheck: ["githubPush", "feed", "duolingo", "leetcode", "codeforces"].contains(definition.params.source ?? "")
     case .activity: ActivityWindowVerifier.rules.contains(definition.params.rule ?? "")
     case .folderActivity, .gitCommits, .backup, .reminders, .folderTidy: true
     case .appLimit: definition.params.minutes != nil
@@ -77,6 +77,10 @@ public func makeVerifier(for definition: TaskDefinition, environment: VerifierEn
         return AppTimeVerifier(definition: definition)
     case .remoteCheck where definition.params.source == "feed":
         return FeedVerifier(definition: definition, fetcher: environment.fetcher, calendar: environment.calendar)
+    case .remoteCheck where definition.params.source == "leetcode":
+        return LeetCodeVerifier(definition: definition, fetcher: environment.fetcher, calendar: environment.calendar)
+    case .remoteCheck where definition.params.source == "codeforces":
+        return CodeforcesVerifier(definition: definition, fetcher: environment.fetcher, calendar: environment.calendar)
     case .remoteCheck where definition.params.source == "duolingo":
         return DuolingoVerifier(definition: definition, fetcher: environment.fetcher, calendar: environment.calendar)
     case .remoteCheck:

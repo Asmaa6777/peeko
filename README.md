@@ -25,6 +25,7 @@ Early days. What works right now:
 - "stay under" limits, like under 45 minutes of YouTube, under 8 hours of screen time, or no social media before noon
 - a 50-minute focus block in your editor, without wandering off
 - "committed code today" across your local repos, "wrote today's daily note", a tidy Desktop, a Time Machine backup, and cleared Reminders
+- "solved a LeetCode problem" or "solved a Codeforces problem" today
 - "published something" for any blog or newsletter with an RSS feed, and a Duolingo lesson
 - a note when Peeko ticks something off for you, and an optional evening reminder if anything's left
 - a gentle nudge to get up and walk for 5 minutes after every hour at the screen (stepping away for 5 minutes resets it)

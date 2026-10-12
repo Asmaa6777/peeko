@@ -6,6 +6,8 @@ All notable changes to Peeko are listed here. The format follows [Keep a Changel
 
 ### Added
 
+- "Solved a LeetCode problem" and "Solved a Codeforces problem": an accepted solution today, checked like the GitHub push (Codeforces' official API; LeetCode's public GraphQL, which is unofficial). When a site can't be reached, the task says so.
+
 - "Stay under" tasks: keep time in an app (or on a site) below a limit. Ships with "Under 45 min of YouTube". The ring shows time used and turns pink near the limit. Going over marks it missed for the day; staying under counts as done when the day ends.
 - The custom app-time form can now be "at least" or "at most".
 - A full window: "Open window" in the popover (⌘O) opens Peeko in a resizable window that can go full screen. It has a sidebar for Today, Catalog, History (20 weeks) and Settings, switched with ⌘1–4. While it's open, Peeko shows in the Dock and ⌘Tab. Its Catalog is a card grid with a search bar (⌘F) and category filters (time in apps, limits, writing, sleep & mornings, online, tap it yourself).

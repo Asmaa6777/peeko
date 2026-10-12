@@ -21,11 +21,17 @@ public actor CachedFetcher {
     }
 
     public func body(of url: URL, every interval: TimeInterval, now: Date) async -> Data? {
-        let key = url.absoluteString
+        await body(for: URLRequest(url: url), every: interval, now: now)
+    }
+
+    /// Any request (GET or POST); cached per URL + body.
+    public func body(for original: URLRequest, every interval: TimeInterval, now: Date) async -> Data? {
+        guard let url = original.url else { return nil }
+        let key = Self.key(for: original)
         var entry = entries[key] ?? Entry(fetchedAt: .distantPast)
         if now >= entry.fetchedAt, now.timeIntervalSince(entry.fetchedAt) < interval { return entry.body }
 
-        var request = URLRequest(url: url)
+        var request = original
         request.setValue("Peeko-App (+https://peeko.stack42.tech)", forHTTPHeaderField: "User-Agent")
         if let etag = entry.etag { request.setValue(etag, forHTTPHeaderField: "If-None-Match") }
         if let modified = entry.lastModified { request.setValue(modified, forHTTPHeaderField: "If-Modified-Since") }
@@ -55,6 +61,125 @@ public actor CachedFetcher {
 
     public func problem(for url: URL) -> String? {
         entries[url.absoluteString]?.problem
+    }
+
+    public func problem(for request: URLRequest) -> String? {
+        entries[Self.key(for: request)]?.problem
+    }
+
+    static func key(for request: URLRequest) -> String {
+        let body = request.httpBody.map { String(decoding: $0, as: UTF8.self) } ?? ""
+        return (request.url?.absoluteString ?? "") + (body.isEmpty ? "" : " " + body)
+    }
+}
+
+/// "Solved a Codeforces problem": an accepted (`OK`) submission today, from the official API.
+public struct CodeforcesVerifier: Verifier {
+    public static let interval: TimeInterval = 10 * 60
+
+    public let definition: TaskDefinition
+    let fetcher: CachedFetcher
+    let calendar: Calendar
+
+    public init(definition: TaskDefinition, fetcher: CachedFetcher, calendar: Calendar) {
+        self.definition = definition
+        self.fetcher = fetcher
+        self.calendar = calendar
+    }
+
+    public func evaluate(context: VerifierContext) async -> TaskStatus {
+        if let existing = context.record.statuses[definition.id], existing.isDone { return existing }
+        guard let request = Self.request(for: definition.params.username ?? ""),
+              let data = await fetcher.body(for: request, every: Self.interval, now: context.now)
+        else { return .pending }
+        let today = Self.acceptedTimes(data).filter { calendar.isDate($0, inSameDayAs: context.now) }
+        return today.min().map { .done(at: $0) } ?? .pending
+    }
+
+    public static func request(for handle: String) -> URLRequest? {
+        let name = handle.trimmingCharacters(in: .whitespaces)
+        guard name.range(of: #"^[A-Za-z0-9_.-]{1,24}$"#, options: .regularExpression) != nil,
+              let url = URL(string: "https://codeforces.com/api/user.status?handle=\(name)&from=1&count=50")
+        else { return nil }
+        return URLRequest(url: url)
+    }
+
+    /// Times of submissions with verdict OK.
+    public static func acceptedTimes(_ data: Data) -> [Date] {
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              json["status"] as? String == "OK",
+              let result = json["result"] as? [[String: Any]]
+        else { return [] }
+        return result.compactMap { submission in
+            guard submission["verdict"] as? String == "OK",
+                  let seconds = (submission["creationTimeSeconds"] as? NSNumber)?.doubleValue
+            else { return nil }
+            return Date(timeIntervalSince1970: seconds)
+        }
+    }
+}
+
+/// "Solved a LeetCode problem": an accepted submission today, from LeetCode's public (unofficial)
+/// GraphQL query `recentAcSubmissionList`. It can change without notice.
+public struct LeetCodeVerifier: Verifier {
+    public static let interval: TimeInterval = 10 * 60
+
+    public let definition: TaskDefinition
+    let fetcher: CachedFetcher
+    let calendar: Calendar
+
+    public init(definition: TaskDefinition, fetcher: CachedFetcher, calendar: Calendar) {
+        self.definition = definition
+        self.fetcher = fetcher
+        self.calendar = calendar
+    }
+
+    public func evaluate(context: VerifierContext) async -> TaskStatus {
+        if let existing = context.record.statuses[definition.id], existing.isDone { return existing }
+        guard let request = Self.request(for: definition.params.username ?? ""),
+              let data = await fetcher.body(for: request, every: Self.interval, now: context.now)
+        else { return .pending }
+        let today = Self.acceptedTimes(data).filter { calendar.isDate($0, inSameDayAs: context.now) }
+        return today.min().map { .done(at: $0) } ?? .pending
+    }
+
+    public static func request(for username: String) -> URLRequest? {
+        let name = username.trimmingCharacters(in: .whitespaces)
+        guard name.range(of: #"^[A-Za-z0-9_-]{1,50}$"#, options: .regularExpression) != nil,
+              let url = URL(string: "https://leetcode.com/graphql")
+        else { return nil }
+        let query = "query r($username: String!, $limit: Int!) { recentAcSubmissionList(username: $username, limit: $limit) { title timestamp } }"
+        let payload: [String: Any] = ["query": query, "variables": ["username": name, "limit": 20]]
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = try? JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("https://leetcode.com", forHTTPHeaderField: "Referer")
+        return request
+    }
+
+    /// `data.recentAcSubmissionList[].timestamp`, seconds as strings.
+    public static func acceptedTimes(_ data: Data) -> [Date] {
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let list = (json["data"] as? [String: Any])?["recentAcSubmissionList"] as? [[String: Any]]
+        else { return [] }
+        return list.compactMap { item in
+            let raw = item["timestamp"]
+            let seconds = (raw as? String).flatMap(Double.init) ?? (raw as? NSNumber)?.doubleValue
+            return seconds.map { Date(timeIntervalSince1970: $0) }
+        }
+    }
+}
+
+/// The request a fetch-based online check makes, so the app can ask the fetcher what went wrong.
+public func onlineRequest(for task: TaskDefinition) -> URLRequest? {
+    let p = task.params
+    switch p.source {
+    case "feed": return FeedVerifier.url(p.url).map { URLRequest(url: $0) }
+    case "duolingo": return DuolingoVerifier.url(for: p.username ?? "").map { URLRequest(url: $0) }
+    case "codeforces": return CodeforcesVerifier.request(for: p.username ?? "")
+    case "leetcode": return LeetCodeVerifier.request(for: p.username ?? "")
+    default: return nil
     }
 }
 

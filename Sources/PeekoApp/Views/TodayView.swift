@@ -93,6 +93,8 @@ private struct TaskRow: View {
             Text(count.map { "\($0) things on the Desktop now · aim for \(task.params.maxItems ?? 5)" } ?? TaskDetail.describe(task))
         } else if task.type == .folderActivity, case let .inProgress(p) = status, let target = task.params.minWords {
             Text("\(Int((p * Double(target)).rounded())) of \(target) words · \(TaskDetail.folderName(task) ?? "notes")")
+        } else if task.type == .remoteCheck, let problem = model.onlineProblems[task.id] {
+            Text(problem)
         } else if task.type == .reminders && !RemindersReader.isAuthorized {
             Text("needs Reminders access · switch it off and on in Catalog")
         } else if task.type == .remoteCheck && task.params.source == "githubPush" {

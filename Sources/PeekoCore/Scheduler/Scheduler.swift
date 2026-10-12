@@ -80,6 +80,12 @@ public final class Scheduler {
         observers.removeAll()
     }
 
+    /// What went wrong with an online check's last request (feeds, Duolingo, LeetCode, Codeforces).
+    public func onlineProblem(for task: TaskDefinition) async -> String? {
+        guard let request = onlineRequest(for: task) else { return nil }
+        return await fetcher.problem(for: request)
+    }
+
     /// The last GitHub problem for the configured username, if any.
     public func githubProblem() async -> String? {
         githubUsername.isEmpty ? nil : await github.problem(for: githubUsername)

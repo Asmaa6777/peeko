@@ -276,6 +276,26 @@
       "icon": "github"
     },
     {
+      "id": "leetcode",
+      "title": "Solved a LeetCode problem",
+      "type": "remoteCheck",
+      "icon": "curlybraces",
+      "params": {
+        "source": "leetcode",
+        "username": ""
+      }
+    },
+    {
+      "id": "codeforces",
+      "title": "Solved a Codeforces problem",
+      "type": "remoteCheck",
+      "icon": "trophy",
+      "params": {
+        "source": "codeforces",
+        "username": ""
+      }
+    },
+    {
       "id": "clean-desktop",
       "title": "Clean Desktop by evening",
       "type": "folderTidy",

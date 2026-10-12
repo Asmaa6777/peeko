@@ -32,6 +32,8 @@ final class AppModel {
     private(set) var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
     private(set) var accessibilityTrusted = Accessibility.isTrusted
     private(set) var githubProblem: String?
+    /// Last problem per online task (feeds, Duolingo, LeetCode, Codeforces), by task id.
+    private(set) var onlineProblems: [String: String] = [:]
     private var localError: String?
     private var breakTracker = BreakTracker()
     private var pastDays = History(days: [:])
@@ -61,6 +63,11 @@ final class AppModel {
                 guard let self else { return }
                 let problem = await self.scheduler.githubProblem()
                 if problem != self.githubProblem { self.githubProblem = problem }
+                var problems: [String: String] = [:]
+                for task in self.tasks where task.type == .remoteCheck && task.params.source != "githubPush" {
+                    if let p = await self.scheduler.onlineProblem(for: task) { problems[task.id] = p }
+                }
+                if problems != self.onlineProblems { self.onlineProblems = problems }
             }
         }
         scheduler.start()
@@ -169,6 +176,10 @@ final class AppModel {
             return .folder(message: "Pick the folder that holds your code. Peeko looks for git repos up to two levels down.")
         case .remoteCheck where p.source == "feed" && (p.url ?? "").isEmpty:
             return .text(title: "Which feed?", message: "Paste the RSS or Atom link of your blog, newsletter or channel.", placeholder: "https://yourblog.com/feed.xml")
+        case .remoteCheck where p.source == "leetcode" && (p.username ?? "").isEmpty:
+            return .text(title: "Your LeetCode username", message: "Your profile needs to be public. Peeko checks for an accepted solution today.", placeholder: "username")
+        case .remoteCheck where p.source == "codeforces" && (p.username ?? "").isEmpty:
+            return .text(title: "Your Codeforces handle", message: "Peeko checks for an accepted (OK) submission today.", placeholder: "handle")
         case .remoteCheck where p.source == "duolingo" && (p.username ?? "").isEmpty:
             return .text(title: "Your Duolingo username", message: "Your profile needs to be public. Peeko checks whether your streak was extended today.", placeholder: "username")
         default:

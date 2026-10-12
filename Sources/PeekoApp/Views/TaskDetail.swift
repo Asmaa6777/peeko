@@ -20,6 +20,9 @@ enum TaskDetail {
             switch task.params.source {
             case "githubPush": return "a public push today"
             case "feed": return feedHost(task).map { "a new post on \($0)" } ?? "add a feed link in Catalog"
+            case "leetcode", "codeforces":
+                let site = task.params.source == "leetcode" ? "LeetCode" : "Codeforces"
+                return (task.params.username ?? "").isEmpty ? "add your \(site) username in Catalog" : "an accepted solution today · @\(task.params.username!)"
             case "duolingo": return (task.params.username ?? "").isEmpty ? "add your username in Catalog" : "a lesson today · @\(task.params.username!)"
             default: return "online check"
             }

@@ -705,6 +705,37 @@ do {
     check(DuolingoVerifier.url(for: "bad name!") == nil, "rejects odd usernames")
 }
 
+group("Online checks: LeetCode and Codeforces")
+do {
+    // 06:15 UTC on Oct 10 = 09:15 in UTC+3; 1791648000 = Oct 10 ~16:00 UTC; 1791500000 = Oct 9.
+    let t1 = at(10, 9, 15).timeIntervalSince1970
+    let lc = #"{"data":{"recentAcSubmissionList":[{"title":"Two Sum","timestamp":"\#(Int(t1))"},{"title":"Old","timestamp":"1791500000"}]}}"#
+    check(LeetCodeVerifier.acceptedTimes(Data(lc.utf8)).count == 2, "reads LeetCode's accepted timestamps")
+    let lcHTTP = FakeHTTP([.init(status: 200, body: lc, etag: nil)])
+    let lcTask = TaskDefinition(id: "lc", title: "lc", type: .remoteCheck, params: TaskParams(source: "leetcode", username: "lee215"), icon: "lc")
+    let lcEnv = VerifierEnvironment(githubUsername: "", github: offlineGitHub(), folders: FolderScanner(store: tempStore()), calendar: calendar,
+                                    fetcher: CachedFetcher(http: lcHTTP))
+    check(await makeVerifier(for: lcTask, environment: lcEnv)!.evaluate(context: .init(now: at(10, 20, 0), record: DayRecord(day: "2026-10-10"))) == .done(at: at(10, 9, 15)),
+          "an accepted solution today → solved")
+    let sent = await lcHTTP.requests.first
+    check(sent?.httpMethod == "POST" && String(decoding: sent?.httpBody ?? Data(), as: UTF8.self).contains("lee215"),
+          "asks LeetCode's GraphQL with a POST carrying the username")
+
+    let cf = #"{"status":"OK","result":[{"creationTimeSeconds":\#(Int(t1)),"verdict":"WRONG_ANSWER","problem":{"name":"A"}},{"creationTimeSeconds":\#(Int(t1) + 600),"verdict":"OK","problem":{"name":"A"}}]}"#
+    check(CodeforcesVerifier.acceptedTimes(Data(cf.utf8)) == [at(10, 9, 25)], "only OK verdicts count")
+    let cfTask = TaskDefinition(id: "cf", title: "cf", type: .remoteCheck, params: TaskParams(source: "codeforces", username: "tourist"), icon: "cf")
+    let cfEnv = VerifierEnvironment(githubUsername: "", github: offlineGitHub(), folders: FolderScanner(store: tempStore()), calendar: calendar,
+                                    fetcher: CachedFetcher(http: FakeHTTP([.init(status: 200, body: cf, etag: nil)])))
+    check(await makeVerifier(for: cfTask, environment: cfEnv)!.evaluate(context: .init(now: at(10, 20, 0), record: DayRecord(day: "2026-10-10"))) == .done(at: at(10, 9, 25)),
+          "a wrong answer then an accepted one → solved at the accepted time")
+    check(CodeforcesVerifier.request(for: "bad handle") == nil && LeetCodeVerifier.request(for: "") == nil, "rejects odd handles")
+
+    let offline = CachedFetcher(http: FakeHTTP([]))
+    let request = LeetCodeVerifier.request(for: "lee215")!
+    _ = await offline.body(for: request, every: 600, now: at(10, 9, 0))
+    check(await offline.problem(for: request) == "can't reach leetcode.com · offline or a firewall?", "an unreachable site is reported")
+}
+
 // MARK: - History and streaks
 
 group("History and streaks")
