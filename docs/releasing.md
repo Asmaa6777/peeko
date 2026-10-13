@@ -30,7 +30,7 @@ The icon is drawn in code from the brand geometry: Peeko hanging from a menu bar
    2. runs `make check`
    3. builds the DMG
    4. takes the release notes from that version's CHANGELOG section
-   5. publishes a GitHub Release with the DMG and its checksum
+   5. publishes a GitHub Release with the DMG, its checksum, and a copy named `Peeko.dmg` (the site's Download button points at `releases/latest/download/Peeko.dmg`)
 
    The workflow fails if the tag and version don't match, or if the CHANGELOG has no section for that version.
 
