@@ -3,7 +3,7 @@ import SwiftUI
 
 enum Tab: String, CaseIterable {
     case today = "Today"
-    case catalog = "Catalog"
+    case explore = "Explore"
     case history = "History"
     case settings = "Settings"
 }
@@ -34,7 +34,7 @@ struct RootView: View {
                         Group {
                             switch tab {
                             case .today: TodayView(tab: $tab)
-                            case .catalog: CatalogView()
+                            case .explore: CatalogView()
                             case .history: HistoryView()
                             case .settings: SettingsView()
                             }

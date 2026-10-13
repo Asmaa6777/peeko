@@ -11,7 +11,7 @@ struct TodayView: View {
                 FaceView(mood: .dozing, width: 56)
                 Text("Nothing to watch yet.")
                     .font(.system(size: 14, weight: .semibold))
-                Button("Pick some tasks") { tab = .catalog }
+                Button("Pick some tasks") { tab = .explore }
                     .buttonStyle(.plain)
                     .font(Theme.mono(12).weight(.medium))
                     .foregroundStyle(Theme.night)
@@ -96,7 +96,7 @@ private struct TaskRow: View {
         } else if task.type == .remoteCheck, let problem = model.onlineProblems[task.id] {
             Text(problem)
         } else if task.type == .reminders && !RemindersReader.isAuthorized {
-            Text("needs Reminders access · switch it off and on in Catalog")
+            Text("needs Reminders access · switch it off and on in Explore")
         } else if task.type == .remoteCheck && task.params.source == "githubPush" {
             let username = model.githubUsername(for: task)
             Text(username.isEmpty ? "add your GitHub username in Settings" : model.githubProblem ?? "checking… · @\(username)")

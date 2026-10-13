@@ -1,31 +1,7 @@
 import PeekoCore
 import SwiftUI
 
-enum TaskCategory: String, CaseIterable, Identifiable {
-    case time = "Time in apps"
-    case limits = "Limits"
-    case writing = "Writing"
-    case routine = "Sleep & mornings"
-    case mac = "On your Mac"
-    case online = "Online"
-    case manual = "Tap it yourself"
-
-    var id: String { rawValue }
-
-    init(_ task: TaskDefinition) {
-        switch task.type {
-        case .appTime: self = .time
-        case .appLimit: self = .limits
-        case .folderActivity: self = .writing
-        case .activity: self = .routine
-        case .remoteCheck: self = .online
-        case .gitCommits, .backup, .reminders, .folderTidy: self = .mac
-        case .manual: self = .manual
-        }
-    }
-}
-
-/// The window's catalog: search, category chips, and a card grid.
+/// The window's Explore page: search, category chips, and a card grid.
 struct CatalogGridView: View {
     @Environment(AppModel.self) private var model
     @ViewState private var query = ""
@@ -119,22 +95,27 @@ struct CatalogGridView: View {
     private var chips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                chip("All", selected: category == nil) { category = nil }
+                chip("All", color: Theme.chalk, selected: category == nil) { category = nil }
                 ForEach(TaskCategory.allCases) { item in
-                    chip(item.rawValue, selected: category == item) { category = category == item ? nil : item }
+                    chip(item.rawValue, color: item.color, selected: category == item) { category = category == item ? nil : item }
                 }
             }
         }
     }
 
-    private func chip(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
+    private func chip(_ title: String, color: Color, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(title)
+            HStack(spacing: 6) {
+                if !selected {
+                    Circle().fill(color).frame(width: 6, height: 6)
+                }
+                Text(title)
+            }
                 .font(Theme.mono(11).weight(.medium))
                 .foregroundStyle(selected ? Theme.night : Theme.chalk.opacity(0.85))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(Capsule().fill(selected ? Theme.green : Theme.card))
+                .background(Capsule().fill(selected ? color : Theme.card))
         }
         .buttonStyle(.plain)
     }
@@ -153,13 +134,15 @@ private struct TaskCard<Accessory: View>: View {
     let isOn: Bool
     @ViewBuilder let accessory: () -> Accessory
 
+    private var kind: TaskCategory { TaskCategory(task) }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top) {
                 TaskIcon(task.icon, size: 17)
-                    .foregroundStyle(Theme.green)
+                    .foregroundStyle(kind.color)
                     .frame(width: 36, height: 36)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Theme.green.opacity(0.12)))
+                    .background(RoundedRectangle(cornerRadius: 10).fill(kind.color.opacity(0.12)))
                 Spacer()
                 accessory()
             }
@@ -173,9 +156,9 @@ private struct TaskCard<Accessory: View>: View {
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
-            Text("· \(TaskCategory(task).rawValue)")
+            Text("· \(kind.rawValue)")
                 .font(Theme.mono(10))
-                .foregroundStyle(Theme.muted.opacity(0.8))
+                .foregroundStyle(kind.color.opacity(0.8))
         }
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 168, alignment: .topLeading)
