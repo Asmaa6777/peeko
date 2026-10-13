@@ -28,7 +28,7 @@ social:
 
 site:
 	mkdir -p site/assets
-	cp docs/assets/icon.png docs/assets/social-preview.png site/assets/
+	cp docs/assets/icon.png docs/assets/social-preview.png docs/assets/maintainer.jpg site/assets/
 	cp install.sh site/install.sh
 	cd site && python3 -m http.server 8642
 

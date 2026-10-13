@@ -46,13 +46,15 @@ curl -fsSL https://peeko.stack42.tech/install.sh | bash
 
 It downloads the latest release, checks its checksum, puts Peeko in Applications, and opens it. Run it again any time to update. [Read the script](install.sh) first if you like; it's short.
 
-Or do it by hand: grab `Peeko-x.y.z.dmg` from [Releases](https://github.com/STACK-42/peeko/releases), open it, and drag Peeko into Applications. Peeko isn't signed with an Apple Developer ID yet, so macOS will block it the first time you open it:
+Or do it by hand: [download the latest DMG](https://github.com/STACK-42/peeko/releases/latest/download/Peeko.dmg) (or pick a version from [Releases](https://github.com/STACK-42/peeko/releases)), open it, and drag Peeko into Applications. Peeko isn't signed with an Apple Developer ID yet, so macOS will block it the first time you open it:
 
 1. Open Peeko once and close the warning.
 2. Go to **System Settings → Privacy & Security** and scroll down.
 3. Click **Open Anyway** next to the Peeko message, then confirm.
 
 You only have to do that once. The install script and building from source both skip it.
+
+On Windows? A Windows version is on its way; someone's already building it.
 
 To uninstall, quit Peeko, then delete `/Applications/Peeko.app`. If you want your history gone too, delete `~/Library/Application Support/Peeko`.
 

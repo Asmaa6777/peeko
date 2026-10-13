@@ -5,3 +5,6 @@ build/
 # Copied in by `make site` and the Pages workflow
 site/assets/
 site/install.sh
+
+# Personal Claude Code notes
+CLAUDE.local.md

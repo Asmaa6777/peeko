@@ -92,14 +92,20 @@
           Peeko sees the evidence and checks it off. If something can't be checked, it isn't on the list.
         </p>
 
-        <div class="command" role="group" aria-label="Install command">
-          <code id="install-cmd">curl -fsSL https://peeko.stack42.tech/install.sh | bash</code>
-          <button class="command__copy" type="button" data-copy="install-cmd">Copy</button>
+        <div class="get">
+          <a class="download" href="https://github.com/STACK-42/peeko/releases/latest/download/Peeko.dmg">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8.5M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Download for Mac
+          </a>
+          <div class="command" role="group" aria-label="Install command">
+            <code id="install-cmd">curl -fsSL https://peeko.stack42.tech/install.sh | bash</code>
+            <button class="command__copy" type="button" data-copy="install-cmd">Copy</button>
+          </div>
         </div>
         <p class="hero__meta">
-          macOS 14+ · Apple silicon · free and MIT-licensed ·
-          <a href="https://github.com/STACK-42/peeko/releases/latest">or download the DMG</a>
+          macOS 14+ · Apple silicon · free and MIT-licensed
         </p>
+        <p class="soon"><span class="soon__dot" aria-hidden="true"></span>Windows version coming soon. Someone's already building it.</p>
       </div>
 
       <div class="hero__demo" aria-label="What the Peeko panel looks like">
@@ -147,6 +153,22 @@
           <span>Push to GitHub ✓ · 3 of 5 done today</span>
         </div>
       </div>
+    </section>
+
+    <section class="section origin" id="origin">
+      <p class="eyebrow">Why Peeko exists</p>
+      <figure class="post">
+        <figcaption class="post__head">
+          <img class="post__avatar" src="assets/maintainer.jpg" width="48" height="48" alt="">
+          <span class="post__who"><strong>Ahmed Alghali</strong><span>@a7med7x7 · made Peeko for macOS</span></span>
+        </figcaption>
+        <blockquote class="post__body">
+          <p>There's friction between finishing a task and checking it off. I always end up starting the next task instead of going back to tick the one I just did.</p>
+          <p>A good part of my daily routine happens on my Mac, and a lot of it can be verified. So why not let the machine verify it for me, and at the end of the day I just get to see it?</p>
+          <p>It's not replacing my to-do list. <mark>It's the self-verifiable to-do list.</mark></p>
+        </blockquote>
+      </figure>
+      <p class="origin__next">So that's Peeko. You keep doing the work, and it does the ticking. Here's how.</p>
     </section>
 
     <section class="section" id="how">
@@ -327,11 +349,15 @@
         <button class="command__copy" type="button" data-copy="install-cmd-2">Copy</button>
       </div>
       <p class="section__lede">It downloads the latest release, checks its checksum, puts Peeko in Applications, and opens it. Run it again to update. <a href="install.sh">Read the script</a> first if you like; it's short.</p>
+      <a class="download download--big" href="https://github.com/STACK-42/peeko/releases/latest/download/Peeko.dmg">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8.5M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Or download the latest DMG
+      </a>
 
       <div class="grid grid--2">
         <article class="card">
           <h3>Prefer the DMG?</h3>
-          <p>Download it from <a href="https://github.com/STACK-42/peeko/releases/latest">Releases</a> and drag Peeko into Applications. It isn't signed with an Apple Developer ID yet, so the first time:</p>
+          <p><a href="https://github.com/STACK-42/peeko/releases/latest/download/Peeko.dmg">Download the latest DMG</a> (or pick a version from <a href="https://github.com/STACK-42/peeko/releases">Releases</a>) and drag Peeko into Applications. It isn't signed with an Apple Developer ID yet, so the first time:</p>
           <ol>
             <li>Open Peeko once and close the warning.</li>
             <li>Go to <strong>System Settings → Privacy &amp; Security</strong>.</li>
@@ -347,7 +373,7 @@ cd peeko
 make install</code></pre>
         </article>
       </div>
-      <p class="requirements">Needs macOS 14 Sonoma or later on an Apple silicon Mac.</p>
+      <p class="requirements">Needs macOS 14 Sonoma or later on an Apple silicon Mac. On Windows? A Windows version is on its way; someone's already building it.</p>
     </section>
   </main>
 

@@ -28,7 +28,7 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p site/assets
-          cp docs/assets/icon.png docs/assets/social-preview.png site/assets/
+          cp docs/assets/icon.png docs/assets/social-preview.png docs/assets/maintainer.jpg site/assets/
           cp install.sh site/install.sh
 
       - uses: actions/configure-pages@v6
