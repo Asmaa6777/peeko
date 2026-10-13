@@ -8,6 +8,13 @@
   --line: rgba(255, 255, 255, 0.09);
   --green: oklch(0.82 0.15 145);
   --blush: oklch(0.82 0.15 330);
+  /* Task groups (how Peeko checks a task), same as Theme in the app. Never used for status. */
+  --g-time: oklch(0.82 0.15 245);
+  --g-limits: var(--blush);
+  --g-writing: oklch(0.82 0.15 85);
+  --g-routine: oklch(0.82 0.15 295);
+  --g-mac: oklch(0.82 0.11 195);
+  --g-online: oklch(0.82 0.15 45);
   --display: "Bricolage Grotesque", ui-rounded, system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --radius: 14px;
@@ -280,7 +287,29 @@ h1, h2, h3 { margin: 0; line-height: 1.1; }
   font: 11px var(--mono);
   color: var(--muted);
 }
-.tag::before { content: "· "; color: var(--green); }
+.tag { color: var(--c, var(--muted)); }
+.tag::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: var(--c, var(--green)); vertical-align: 1px; }
+.example[hidden] { display: none; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--card);
+  color: rgba(242, 242, 239, 0.85);
+  font: 500 12px var(--mono);
+  cursor: pointer;
+}
+.chip[style]::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
+.chip:hover { background: #2a2a28; }
+.chip.is-on { background: var(--c, var(--chalk)); color: var(--night); }
+.chip.is-on::before { display: none; }
+.swatches__label { margin: 28px 0 0; font: 500 12px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.swatches__label + .swatches { margin-top: 14px; }
 
 .face-card {
   margin: 0;
