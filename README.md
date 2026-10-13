@@ -54,7 +54,7 @@ Or do it by hand: [download the latest DMG](https://github.com/STACK-42/peeko/re
 
 You only have to do that once. The install script and building from source both skip it.
 
-On Windows? A Windows version is on its way; someone's already building it.
+Windows version coming soon.
 
 To uninstall, quit Peeko, then delete `/Applications/Peeko.app`. If you want your history gone too, delete `~/Library/Application Support/Peeko`.
 
