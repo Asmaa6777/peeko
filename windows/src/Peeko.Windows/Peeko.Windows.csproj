@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Peeko</AssemblyName>
+    <RootNamespace>Peeko.Windows</RootNamespace>
+    <!-- lets `dotnet build` compile this from macOS/Linux; running needs Windows -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Peeko.Core/Peeko.Core.csproj" />
+    <Content Include="../../Resources/catalog.windows.json" Link="catalog.windows.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
