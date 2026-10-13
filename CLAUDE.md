@@ -46,4 +46,5 @@ Peeko is a local-first macOS menu bar app (Swift 6, SwiftUI, SwiftPM, **no Xcode
 
 - Tone: curious, cheering, never policing. Write "Peeko saw that! Read for 30 minutes ✓", never "Verified".
 - Faces: pending/failed → dozing, inProgress → looking, done → beaming. The menu bar icon is an eyes-only template image.
+- The tab users see is **Explore**; in code the presets are still `catalog.json` / `CatalogView`. Each `TaskCategory` (how Peeko checks a task) has a color on icons and chips only; status (rings, ticks, faces) stays green.
 - Colors (in `Theme`): Peeko green `oklch(0.82 0.15 145)` ≈ `#81DD86`, Night `#151515`, Chalk `#F2F2EF`, Blush `oklch(0.82 0.15 330)`. The brand fonts (Bricolage Grotesque, JetBrains Mono) aren't bundled yet; the UI uses SF Rounded and SF Mono for now.

@@ -97,7 +97,7 @@ struct HistoryView: View {
         return HStack(spacing: 12) {
             TaskIcon(task.icon, size: 13)
                 .frame(width: 20)
-                .foregroundStyle(Theme.green)
+                .foregroundStyle(TaskCategory(task).color)
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.title)
                     .font(.system(size: 13, weight: .semibold))

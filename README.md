@@ -8,7 +8,7 @@
 
 Peeko hangs from the top of your screen and peeks at what you're doing. Keep a PDF open in Preview for half an hour and "Read for 30 minutes" ticks itself. Push to GitHub and that one goes green as well. Log off by 11 and it notices that too.
 
-It isn't another to-do list. Everything in its catalog is something your Mac can actually check, so you don't spend the evening ticking boxes. (You can still add a few of your own if you want.)
+It isn't another to-do list. Everything in Explore is something your Mac can actually check, so you don't spend the evening ticking boxes. (You can still add a few of your own if you want.)
 
 It isn't there to police you. It's more like a little green creature that notices when you got something done and looks pleased about it.
 
@@ -16,7 +16,7 @@ It isn't there to police you. It's more like a little green creature that notice
 
 Early days. What works right now:
 
-- the menu bar icon and popover, with a **Today** list and a **Catalog** of presets, plus a full window when you want more room
+- the menu bar icon and popover, with a **Today** list and an **Explore** page of presets, plus a full window when you want more room
 - manual tasks, plus your own custom ones
 - tasks that count time in an app, like reading in Preview or deep work in your editor, including ones you set up yourself
 - a daily "did I push to GitHub?" check

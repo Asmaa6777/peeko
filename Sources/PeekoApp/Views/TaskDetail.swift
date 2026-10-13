@@ -19,11 +19,11 @@ enum TaskDetail {
         case .remoteCheck:
             switch task.params.source {
             case "githubPush": return "a public push today"
-            case "feed": return feedHost(task).map { "a new post on \($0)" } ?? "add a feed link in Catalog"
+            case "feed": return feedHost(task).map { "a new post on \($0)" } ?? "add a feed link in Explore"
             case "leetcode", "codeforces":
                 let site = task.params.source == "leetcode" ? "LeetCode" : "Codeforces"
-                return (task.params.username ?? "").isEmpty ? "add your \(site) username in Catalog" : "an accepted solution today · @\(task.params.username!)"
-            case "duolingo": return (task.params.username ?? "").isEmpty ? "add your username in Catalog" : "a lesson today · @\(task.params.username!)"
+                return (task.params.username ?? "").isEmpty ? "add your \(site) username in Explore" : "an accepted solution today · @\(task.params.username!)"
+            case "duolingo": return (task.params.username ?? "").isEmpty ? "add your username in Explore" : "a lesson today · @\(task.params.username!)"
             default: return "online check"
             }
         case .activity:
@@ -36,12 +36,12 @@ enum TaskDetail {
             default: return until == "24:00" ? "no screen time after \(from)" : "no screen time \(from)–\(until)"
             }
         case .folderActivity:
-            guard let folder = folderName(task) else { return "pick a folder in Catalog" }
+            guard let folder = folderName(task) else { return "pick a folder in Explore" }
             if task.params.dailyNote == true { return "today's dated note in \(folder)" }
             let words = task.params.minWords ?? 0
             return words > 0 ? "\(words) words in \(folder)" : "any note in \(folder)"
         case .gitCommits:
-            guard let folder = folderName(task) else { return "pick your code folder in Catalog" }
+            guard let folder = folderName(task) else { return "pick your code folder in Explore" }
             return "a commit in \(folder) today"
         case .backup:
             return "a Time Machine backup today"

@@ -118,7 +118,7 @@ struct MainWindowView: View {
     private func icon(for tab: Tab) -> String {
         switch tab {
         case .today: "checklist"
-        case .catalog: "square.grid.2x2"
+        case .explore: "square.grid.2x2"
         case .history: "calendar"
         case .settings: "gearshape"
         }
@@ -146,13 +146,13 @@ struct MainWindowView: View {
                     }
                     switch section {
                     case .today: TodayView(tab: $section)
-                    case .catalog: CatalogGridView()
+                    case .explore: CatalogGridView()
                     case .history: HistoryView(weeks: 20)
                     case .settings: SettingsView()
                     }
                 }
-                // The catalog grid and the history calendar use the extra width; lists stay readable.
-                .frame(maxWidth: section == .catalog || section == .history ? 960 : 640, alignment: .leading)
+                // The Explore grid and the history calendar use the extra width; lists stay readable.
+                .frame(maxWidth: section == .explore || section == .history ? 960 : 640, alignment: .leading)
                 .padding(.horizontal, 36)
                 .padding(.top, 48)
                 .padding(.bottom, 36)
@@ -168,7 +168,7 @@ struct MainWindowView: View {
         switch section {
         case .today:
             model.tasks.isEmpty ? "nothing to watch yet" : "\(model.doneCount) of \(model.tasks.count) done"
-        case .catalog: "pick what Peeko keeps an eye on"
+        case .explore: "pick what Peeko keeps an eye on"
         case .history: "the last 20 weeks"
         case .settings: "how Peeko behaves"
         }
