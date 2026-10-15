@@ -1,8 +1,11 @@
-# Peeko for Windows (skeleton)
+# Peeko for Windows (build 10)
 
-Sits beside the macOS app and shares its data contract: the same `tasks.json` / `days/*.json`
-shapes, `schemaVersion` rules and verifier semantics. Nothing here touches `Sources/` or the
-macOS build.
+An early, unreleased port. It sits beside the macOS app and shares its data contract: the same
+`tasks.json` / `days/*.json` shapes, `schemaVersion` rules and verifier semantics. Nothing here
+touches `Sources/` or the macOS build.
+
+The current test build is **build 10** (`dist/Peeko-build10.zip`; the footer says "build 10").
+Give the next one a new number and a new zip name, so an old exe is never mistaken for it.
 
 | Path | What |
 |---|---|
@@ -21,6 +24,9 @@ dotnet run --project src/Peeko.Windows          # Windows only
 Data lives in `%APPDATA%\Peeko`. Launching `Peeko.exe` again brings the window forward; closing the
 window hides it to the tray. Use **Quit** in the footer or the tray menu to exit.
 
+If something goes wrong, Peeko shows a message and writes the details to `%APPDATA%\Peeko\error.log`.
+A problem in a click keeps Peeko running; only a fatal one closes it.
+
 A self-contained exe: `dotnet publish src/Peeko.Windows -c Release -r win-x64 --self-contained true
 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true
 -o dist/<name>` (about 72 MB).
@@ -37,7 +43,8 @@ Shaped like the macOS app, and drawn by hand to match it:
 - **Right-click the tray face** for a quick menu.
 
 - **Explore:** 23 presets grouped by how Peeko checks them, each group with its own color. Switching one on asks for what it needs (a
-  folder, a username, a feed link). Your own manual tasks go at the bottom.
+  folder, a username, a feed link); a username or handle that can't be right is turned away at
+  once instead of waiting forever. Your own manual tasks go at the bottom.
 - **Settings:** GitHub username, balloons, evening reminder (time), break reminders (interval),
   launch at login, open the data folder, export everything as JSON.
 
@@ -50,8 +57,7 @@ windows), `remoteCheck` (GitHub, feeds, Duolingo, LeetCode, Codeforces), `folder
 `backup` (Time Machine) and `reminders` (EventKit) are macOS-only: they stay in `tasks.json`
 untouched and show "Mac only".
 
-Not done yet: a popover anchored to the tray, an installer and signing, auto-updates, onboarding,
-and CI for Windows.
+Not done yet: an installer and signing, auto-updates, onboarding, and CI for Windows.
 
 ## Layout of the core
 

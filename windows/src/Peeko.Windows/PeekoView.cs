@@ -28,7 +28,7 @@ internal sealed class PeekoView : Control
     public const float PopTotalH = HeaderH + TabsH + PopContentH + FooterH;
     private const float SidebarW = 230;
     private const string Version = "0.1.0";
-    private const string Build = "build 9";
+    private const string Build = "build 10";
 
     private readonly ViewMode _mode;
     private readonly Scheduler _scheduler;
@@ -107,7 +107,7 @@ internal sealed class PeekoView : Control
     }
 
     private string? Ask(string title, string label, string initial = "", string okText = "Add", bool allowEmpty = false) =>
-        Dialog(() => Ask(title, label, initial, okText, allowEmpty));
+        Dialog(() => AskText.Ask(this, title, label, initial, okText, allowEmpty));
 
     private void Say(string message) => Dialog(() => MessageBox.Show(this, message, "Peeko"));
 
@@ -571,6 +571,12 @@ internal sealed class PeekoView : Control
                 var name = Ask(title, message, okText: "Switch on");
                 if (name is null) return;
                 p.Username = name.Trim().TrimStart('@');
+                // A handle the site can't have would sit at "pending" forever; say so now instead.
+                if (OnlineChecks.RequestFor(task) is null)
+                {
+                    Say($"That doesn't look like a {(p.Source == "codeforces" ? "Codeforces handle" : "username")}.");
+                    return;
+                }
                 break;
             }
         }
@@ -908,10 +914,14 @@ internal sealed class PeekoView : Control
         Gfx.FillRound(g, Theme.Card, general, 10);
         ry = y + 3;
         ToggleRow(g, general, ref ry, "Launch at login", LaunchAtLogin, false, () => { LaunchAtLogin = !LaunchAtLogin; Invalidate(); });
-        LinkRow(g, general, ref ry, "Your data", "Open in Explorer", () => Process.Start("explorer.exe", _store.Root));
+        LinkRow(g, general, ref ry, "Your data", "Open in Explorer", () =>
+        {
+            Directory.CreateDirectory(_store.Root);
+            Launch(new ProcessStartInfo("explorer.exe", $"\"{_store.Root}\""));
+        });
         LinkRow(g, general, ref ry, "Everything in one file", "Export JSON…", ExportJson);
         LinkRow(g, general, ref ry, "Updates", "Releases on GitHub", () =>
-            Process.Start(new ProcessStartInfo("https://github.com/STACK-42/peeko/releases") { UseShellExecute = true }));
+            Launch(new ProcessStartInfo("https://github.com/STACK-42/peeko/releases") { UseShellExecute = true }));
         return y + general.Height;
     }
 
@@ -939,6 +949,16 @@ internal sealed class PeekoView : Control
         AddHit(plusRect, plus);
         AddHit(minusRect, minus);
         ry += 38;
+    }
+
+    /// <summary>Starts Explorer or the browser; a failure is a message, never a crash.</summary>
+    private void Launch(ProcessStartInfo info)
+    {
+        try { Process.Start(info); }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            Say($"Couldn't open that: {e.Message}");
+        }
     }
 
     private void LinkRow(Graphics g, RectangleF card, ref float ry, string label, string action, Action perform)
