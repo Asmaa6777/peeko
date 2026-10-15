@@ -4,11 +4,11 @@
 
 [![CI](https://github.com/STACK-42/peeko/actions/workflows/ci.yml/badge.svg)](https://github.com/STACK-42/peeko/actions/workflows/ci.yml)
 
-**The to-do list that checks itself.** A small macOS menu bar app: you do the thing, your Mac sees the evidence, and Peeko ticks it off. **[peeko.stack42.tech](https://peeko.stack42.tech)**
+**The to-do list that checks itself.** A small menu bar app for macOS, with an early version for Windows: you do the thing, your computer sees the evidence, and Peeko ticks it off. **[peeko.stack42.tech](https://peeko.stack42.tech)**
 
 Peeko hangs from the top of your screen and peeks at what you're doing. Keep a PDF open in Preview for half an hour and "Read for 30 minutes" ticks itself. Push to GitHub and that one goes green as well. Log off by 11 and it notices that too.
 
-It isn't another to-do list. Everything in Explore is something your Mac can actually check, so you don't spend the evening ticking boxes. (You can still add a few of your own if you want.)
+It isn't another to-do list. Everything in Explore is something your computer can actually check, so you don't spend the evening ticking boxes. (You can still add a few of your own if you want.)
 
 It isn't there to police you. It's more like a little green creature that notices when you got something done and looks pleased about it.
 
@@ -36,7 +36,15 @@ Early days. What works right now:
 
 Not built yet: auto-updates. For now, new versions are on the Releases page.
 
+### On Windows
+
+The Windows version is an early preview. It lives in the tray, has the same Today, Explore and History tabs and a full window, and reads the same kind of files as the Mac app. It can do everything above except the Time Machine backup and Reminders tasks, which only make sense on a Mac. Instead of Preview and your editor, it watches Windows apps (by their program name).
+
+There's no installer yet and it isn't signed, so it's a zip you unpack yourself (see below).
+
 ## Install
+
+### Mac
 
 Paste this into Terminal:
 
@@ -54,13 +62,19 @@ Or do it by hand: [download the latest DMG](https://github.com/STACK-42/peeko/re
 
 You only have to do that once. The install script and building from source both skip it.
 
-Windows version coming soon.
-
 To uninstall, quit Peeko, then delete `/Applications/Peeko.app`. If you want your history gone too, delete `~/Library/Application Support/Peeko`.
+
+### Windows
+
+[Download Peeko for Windows](https://github.com/STACK-42/peeko/releases/download/windows-build10/Peeko-build10.zip) (build 10, Windows 10 or 11, 64-bit), unzip it somewhere you'll keep it, and open `Peeko.exe`. Peeko isn't signed yet, so Windows may show "Windows protected your PC" the first time: click **More info**, then **Run anyway**. You only have to do that once.
+
+Look for the Peeko face in the tray (it may be tucked under the `^` arrow). To have it start with Windows, turn on launch at login in Settings.
+
+To uninstall, quit Peeko from the tray, delete `Peeko.exe`, and delete `%APPDATA%\Peeko` if you want your history gone too.
 
 ## Privacy
 
-There are no accounts, servers, or analytics. Your tasks and history are plain JSON files in `~/Library/Application Support/Peeko/`, so you can read them, back them up, or delete them whenever you like.
+There are no accounts, servers, or analytics. Your tasks and history are plain JSON files in `~/Library/Application Support/Peeko/` on a Mac or `%APPDATA%\Peeko` on Windows, so you can read them, back them up, or delete them whenever you like.
 
 If you turn on the GitHub task, Peeko asks GitHub's public API for your public activity every 10 minutes, using the username you gave it. That's the only network request it makes. No token, so private repos don't count.
 
@@ -70,13 +84,15 @@ Peeko only looks at a couple of simple signals:
 
 - **Time in an app:** which app is in front, and whether you've touched the keyboard or mouse in the last couple of minutes. If both hold, the minute counts.
 - **GitHub:** whether your public activity shows a push made today, in your own time zone.
-- **When you're at the Mac:** the stretches of keyboard and mouse activity, used for the sleep and early-morning tasks. It only sees the Mac, not your phone in bed.
-- **Website limits:** the title of the front window, to spot sites like YouTube. This needs Accessibility permission, and Peeko only asks when you turn on a limit that uses it.
-- **Your notes folder:** which `.md` and `.txt` files changed today and how many words were added. Only the folder you pick, and nothing leaves your Mac.
+- **When you're at the Mac:** the stretches of keyboard and mouse activity, used for the sleep and early-morning tasks. It only sees your computer, not your phone in bed.
+- **Website limits:** the title of the front window, to spot sites like YouTube. On a Mac this needs Accessibility permission, and Peeko only asks when you turn on a limit that uses it.
+- **Your notes folder:** which `.md` and `.txt` files changed today and how many words were added. Only the folder you pick, and nothing leaves your computer.
 
 These are proxies, not proof. Leave a PDF open and nudge the mouse now and then, and it will count as reading. That's fine. The point is a nudge, not a lie detector.
 
 ## Build it yourself
+
+### Mac
 
 You need macOS 14 or later on an Apple silicon Mac, and Apple's Command Line Tools (`xcode-select --install`). You don't need Xcode.
 
@@ -88,9 +104,22 @@ make run
 
 That builds `build/Peeko.app` and opens it. Use `make install` instead to put it in Applications (launch at login works best from there). Look for the eyes in your menu bar. If your menu bar is crowded, macOS might hide the icon behind the `«` overflow; ⌘-drag it somewhere you can see it.
 
+### Windows
+
+You need Windows 10 or 11 and the [.NET SDK](https://dotnet.microsoft.com/download) (8 or newer).
+
+```sh
+git clone https://github.com/STACK-42/peeko.git
+cd peeko
+dotnet run --project windows/src/Peeko.Windows
+```
+
+Look for the Peeko face in the tray (it may be tucked under the `^` arrow). Left-click it for the popover, or right-click for a menu. To get a single `Peeko.exe` you can keep, see the [Windows notes](windows/README.md).
+
 ## Docs
 
 - [Development setup](docs/development.md): toolchain, commands, and quirks
+- [Windows](windows/README.md): the Windows version, how it's laid out, and what it covers
 - [Architecture](docs/architecture.md): how the pieces fit together
 - [Releasing](docs/releasing.md): packaging, versions, and signing
 - [Blueprint](docs/blueprint.md): the original plan and roadmap
