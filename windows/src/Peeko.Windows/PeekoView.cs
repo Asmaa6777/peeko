@@ -28,7 +28,7 @@ internal sealed class PeekoView : Control
     public const float PopTotalH = HeaderH + TabsH + PopContentH + FooterH;
     private const float SidebarW = 230;
     private const string Version = "1.0.0";
-    private const string Build = "build 14";
+    private const string Build = "build 13";
 
     private readonly ViewMode _mode;
     private readonly Scheduler _scheduler;
