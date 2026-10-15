@@ -5,6 +5,31 @@ namespace Peeko.Windows;
 
 internal static class Program
 {
+    private static string LogPath =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Peeko", "error.log");
+
+    private static void Log(Exception? e)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(LogPath)!);
+            File.AppendAllText(LogPath, $"--- {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}\n{e}\n\n");
+        }
+        catch { /* nowhere left to report to */ }
+    }
+
+    private static void Report(Exception? e, bool fatal)
+    {
+        Log(e);
+        var what = fatal ? "Peeko has to close." : "Peeko hit a problem but is still running.";
+        try
+        {
+            MessageBox.Show($"{what}\n\n{e?.Message}\n\nDetails: {LogPath}", "Peeko",
+                MessageBoxButtons.OK, fatal ? MessageBoxIcon.Error : MessageBoxIcon.Warning);
+        }
+        catch { }
+    }
+
     private const string MutexName = @"Local\com.a7med7x7.peeko";
     private const string ShowEventName = @"Local\com.a7med7x7.peeko.show";
 
@@ -19,6 +44,13 @@ internal static class Program
             return;
         }
 
+        // A safety net: a bug in a click handler shows a message and Peeko keeps running; anything
+        // fatal is at least written to error.log, so "it just closed" always leaves a trace.
+        Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+        Application.ThreadException += (_, e) => Report(e.Exception, fatal: false);
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => Report(e.ExceptionObject as Exception, fatal: true);
+        TaskScheduler.UnobservedTaskException += (_, e) => { Log(e.Exception); e.SetObserved(); };
+
         ApplicationConfiguration.Initialize();
         try
         {
@@ -26,12 +58,7 @@ internal static class Program
         }
         catch (Exception e)
         {
-            // A tray app has no console, so a crash would otherwise look like "nothing happened".
-            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Peeko");
-            Directory.CreateDirectory(dir);
-            File.WriteAllText(Path.Combine(dir, "error.log"), e.ToString());
-            MessageBox.Show($"Peeko couldn't start.\n\n{e.Message}\n\nDetails: {Path.Combine(dir, "error.log")}",
-                "Peeko", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Report(e, fatal: true);
         }
     }
 }

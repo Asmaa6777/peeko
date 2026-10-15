@@ -620,6 +620,45 @@ DayRecord Spans(params (DateTimeOffset s, DateTimeOffset e)[] spans)
     finally { try { Directory.Delete(dir, true); } catch { } }
 }
 
+// --- source guard: a method that only forwards its own arguments to itself loops forever, and a
+// stack overflow kills the app with no error (this shipped once: every prompt crashed Peeko).
+{
+    var dir = new DirectoryInfo(AppContext.BaseDirectory);
+    while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "src", "Peeko.Windows"))) dir = dir.Parent;
+    if (dir is null)
+    {
+        Check("source guard: found windows/src", false);
+    }
+    else
+    {
+        var member = new System.Text.RegularExpressions.Regex(
+            @"(?:private|public|internal|protected)[^\n;{=]*?\b(\w+)\s*\(([^)]*)\)\s*=>\s*([^;]*);",
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+        var loops = new List<string>();
+        var scanned = 0;
+        foreach (var file in Directory.EnumerateFiles(Path.Combine(dir.FullName, "src"), "*.cs", SearchOption.AllDirectories))
+        {
+            if (file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")) continue;
+            foreach (System.Text.RegularExpressions.Match m in member.Matches(File.ReadAllText(file)))
+            {
+                scanned++;
+                var name = m.Groups[1].Value;
+                var own = m.Groups[2].Value.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(p => p.Split('=')[0].Trim().Split(' ').Last()).ToList();
+                foreach (System.Text.RegularExpressions.Match call in System.Text.RegularExpressions.Regex.Matches(
+                             m.Groups[3].Value, $@"(?<![\w.]){name}\s*\(([^()]*)\)"))
+                {
+                    var callArgs = call.Groups[1].Value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(a => a.Trim()).ToList();
+                    if (callArgs.SequenceEqual(own)) loops.Add($"{Path.GetFileName(file)}: {name}");
+                }
+            }
+        }
+        Check("source guard: scanned the Windows sources", scanned > 50);
+        Check("source guard: no member calls itself with its own arguments" + (loops.Count > 0 ? $" ({string.Join(", ", loops)})" : ""),
+            loops.Count == 0);
+    }
+}
+
 // --- catalog
 {
     var path = Path.Combine(AppContext.BaseDirectory, "catalog.windows.json");
