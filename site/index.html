@@ -92,14 +92,20 @@
           Peeko sees the evidence and checks it off. If something can't be checked, it isn't on the list.
         </p>
 
-        <div class="command" role="group" aria-label="Install command">
-          <code id="install-cmd">curl -fsSL https://peeko.stack42.tech/install.sh | bash</code>
-          <button class="command__copy" type="button" data-copy="install-cmd">Copy</button>
+        <div class="get">
+          <a class="download" href="https://github.com/STACK-42/peeko/releases/latest/download/Peeko.dmg">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8.5M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Download for Mac
+          </a>
+          <div class="command" role="group" aria-label="Install command">
+            <code id="install-cmd">curl -fsSL https://peeko.stack42.tech/install.sh | bash</code>
+            <button class="command__copy" type="button" data-copy="install-cmd">Copy</button>
+          </div>
         </div>
         <p class="hero__meta">
-          macOS 14+ · Apple silicon · free and MIT-licensed ·
-          <a href="https://github.com/STACK-42/peeko/releases/latest">or download the DMG</a>
+          macOS 14+ · Apple silicon · free and MIT-licensed
         </p>
+        <p class="soon"><span class="soon__dot" aria-hidden="true"></span>Windows version coming soon.</p>
       </div>
 
       <div class="hero__demo" aria-label="What the Peeko panel looks like">
@@ -149,6 +155,22 @@
       </div>
     </section>
 
+    <section class="section origin" id="origin">
+      <p class="eyebrow">Why Peeko exists</p>
+      <figure class="post">
+        <figcaption class="post__head">
+          <img class="post__avatar" src="assets/maintainer.jpg" width="48" height="48" alt="">
+          <span class="post__who"><strong>Ahmed Alghali</strong><span>@a7med7x7 · made Peeko for macOS</span></span>
+        </figcaption>
+        <blockquote class="post__body">
+          <p>There's friction between finishing a task and checking it off. I always end up starting the next task instead of going back to tick the one I just did.</p>
+          <p>A good part of my daily routine happens on my Mac, and a lot of it can be verified. So why not let the machine verify it for me, and at the end of the day I just get to see it?</p>
+          <p>It's not replacing my to-do list. <mark>It's the self-verifiable variant of the to-do list - if that's a name -.</mark></p>
+        </blockquote>
+      </figure>
+      <p class="origin__next">So that's Peeko. You keep doing the work, and it does the ticking. Here's how.</p>
+    </section>
+
     <section class="section" id="how">
       <p class="eyebrow">How a box gets ticked</p>
       <h2>You do the thing. Peeko checks. It ticks itself.</h2>
@@ -187,78 +209,87 @@
       <p class="eyebrow">The list</p>
       <h2>Every task comes with its proof.</h2>
       <p class="section__lede">Pick what you want in Explore. Each task knows exactly what counts as done, and checks it on its own.</p>
-      <div class="grid grid--3">
-        <article class="example">
+            <div class="chips" role="group" aria-label="Filter by how Peeko checks">
+        <button type="button" class="chip is-on" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" class="chip" data-filter="time" style="--c:var(--g-time)" aria-pressed="false">Time in apps</button>
+        <button type="button" class="chip" data-filter="limits" style="--c:var(--g-limits)" aria-pressed="false">Limits</button>
+        <button type="button" class="chip" data-filter="writing" style="--c:var(--g-writing)" aria-pressed="false">Writing</button>
+        <button type="button" class="chip" data-filter="routine" style="--c:var(--g-routine)" aria-pressed="false">Sleep &amp; mornings</button>
+        <button type="button" class="chip" data-filter="mac" style="--c:var(--g-mac)" aria-pressed="false">On your Mac</button>
+        <button type="button" class="chip" data-filter="online" style="--c:var(--g-online)" aria-pressed="false">Online</button>
+      </div>
+      <div class="grid grid--3 examples">
+        <article class="example" data-group="time">
           <svg class="face face--40"><use href="#face-looking"/></svg>
           <h3>Read for 30 minutes</h3>
           <p class="proof"><b>Proof</b> Preview, Books or Kindle in front, with you active, for 30 minutes.</p>
-          <span class="tag">time in apps</span>
+          <span class="tag" style="--c:var(--g-time)">Time in apps</span>
         </article>
-        <article class="example">
+        <article class="example" data-group="time">
           <svg class="face face--40"><use href="#face-beaming"/></svg>
           <h3>One 50-minute focus block</h3>
           <p class="proof"><b>Proof</b> 50 minutes straight in your editor. A glance at chat is fine; wandering off resets it.</p>
-          <span class="tag">time in apps</span>
+          <span class="tag" style="--c:var(--g-time)">Time in apps</span>
         </article>
-        <article class="example">
+        <article class="example" data-group="mac">
           <svg class="face face--40"><use href="#face-beaming"/></svg>
           <h3>Committed code today</h3>
           <p class="proof"><b>Proof</b> your local repos show a commit by your email since midnight. Private repos count.</p>
-          <span class="tag">on your Mac</span>
+          <span class="tag" style="--c:var(--g-mac)">On your Mac</span>
         </article>
-        <article class="example">
+        <article class="example" data-group="online">
           <svg class="face face--40"><use href="#face-beaming"/></svg>
           <h3>Push to GitHub</h3>
           <p class="proof"><b>Proof</b> a push in your public GitHub activity, dated today in your time zone.</p>
-          <span class="tag">online</span>
+          <span class="tag" style="--c:var(--g-online)">Online</span>
         </article>
-        <article class="example">
+        <article class="example" data-group="writing">
           <svg class="face face--40"><use href="#face-looking"/></svg>
           <h3>Write 300 words</h3>
           <p class="proof"><b>Proof</b> word counts in your notes folder or Obsidian vault, compared with this morning.</p>
-          <span class="tag">writing</span>
+          <span class="tag" style="--c:var(--g-writing)">Writing</span>
         </article>
-        <article class="example">
+        <article class="example" data-group="writing">
           <svg class="face face--40"><use href="#face-beaming"/></svg>
           <h3>Wrote today's daily note</h3>
           <p class="proof"><b>Proof</b> a note named for today, like <code>2026-10-12.md</code>, in your vault.</p>
-          <span class="tag">writing</span>
+          <span class="tag" style="--c:var(--g-writing)">Writing</span>
         </article>
-        <article class="example">
+        <article class="example" data-group="routine">
           <svg class="face face--40"><use href="#face-beaming"/></svg>
           <h3>Slept on time</h3>
           <p class="proof"><b>Proof</b> no keyboard or mouse activity between 00:30 and 05:00.</p>
-          <span class="tag">sleep &amp; mornings</span>
+          <span class="tag" style="--c:var(--g-routine)">Sleep &amp; mornings</span>
         </article>
-        <article class="example">
+        <article class="example" data-group="routine">
           <svg class="face face--40"><use href="#face-dozing"/></svg>
           <h3>Stopped working by 11 PM</h3>
           <p class="proof"><b>Proof</b> nothing on the Mac after 23:00. Settled at midnight, even if it's asleep.</p>
-          <span class="tag">sleep &amp; mornings</span>
+          <span class="tag" style="--c:var(--g-routine)">Sleep &amp; mornings</span>
         </article>
-        <article class="example">
+        <article class="example" data-group="routine">
           <svg class="face face--40"><use href="#face-looking"/></svg>
           <h3>Lunch away from the screen</h3>
           <p class="proof"><b>Proof</b> a 30-minute gap in your activity between 12 and 3.</p>
-          <span class="tag">sleep &amp; mornings</span>
+          <span class="tag" style="--c:var(--g-routine)">Sleep &amp; mornings</span>
         </article>
-        <article class="example">
+        <article class="example" data-group="limits">
           <svg class="face face--40"><use href="#face-looking"/></svg>
           <h3>Under 8 hours of screen time</h3>
           <p class="proof"><b>Proof</b> your active minutes across every app. The ring turns pink near the limit.</p>
-          <span class="tag">limits</span>
+          <span class="tag" style="--c:var(--g-limits)">Limits</span>
         </article>
-        <article class="example">
+        <article class="example" data-group="limits">
           <svg class="face face--40"><use href="#face-beaming"/></svg>
           <h3>No social media before noon</h3>
           <p class="proof"><b>Proof</b> the titles of your browser windows. No X, Reddit or Instagram before 12:00.</p>
-          <span class="tag">limits</span>
+          <span class="tag" style="--c:var(--g-limits)">Limits</span>
         </article>
-        <article class="example">
+        <article class="example" data-group="online">
           <svg class="face face--40"><use href="#face-looking"/></svg>
           <h3>Published something</h3>
           <p class="proof"><b>Proof</b> a post dated today in your blog's or newsletter's RSS feed.</p>
-          <span class="tag">online</span>
+          <span class="tag" style="--c:var(--g-online)">Online</span>
         </article>
       </div>
       <p class="more">And more: a solved LeetCode or Codeforces problem, up before 8, took your breaks, a tidy Desktop, a Time Machine backup, cleared Reminders, a Duolingo lesson, music and design practice, under 45 minutes of YouTube. Plus a gentle nudge to stand up after every hour at the screen.</p>
@@ -301,11 +332,14 @@
           <figcaption><strong>Beaming</strong><span>Checked. Peeko saw that.</span></figcaption>
         </figure>
       </div>
-      <ul class="swatches" aria-label="Colors">
-        <li><span style="background:var(--green)"></span>Peeko green</li>
-        <li><span style="background:var(--night);box-shadow:inset 0 0 0 1px var(--line)"></span>Night</li>
-        <li><span style="background:var(--blush)"></span>Blush</li>
-        <li><span style="background:var(--chalk)"></span>Chalk</li>
+      <p class="swatches__label">Task groups · how Peeko checks it · on icons and tags, never on status</p>
+      <ul class="swatches" aria-label="Task group colors">
+        <li><span style="background:var(--g-time)"></span>Time in apps</li>
+        <li><span style="background:var(--g-limits)"></span>Limits</li>
+        <li><span style="background:var(--g-writing)"></span>Writing</li>
+        <li><span style="background:var(--g-routine)"></span>Sleep &amp; mornings</li>
+        <li><span style="background:var(--g-mac)"></span>On your Mac</li>
+        <li><span style="background:var(--g-online)"></span>Online</li>
       </ul>
     </section>
 
@@ -327,11 +361,15 @@
         <button class="command__copy" type="button" data-copy="install-cmd-2">Copy</button>
       </div>
       <p class="section__lede">It downloads the latest release, checks its checksum, puts Peeko in Applications, and opens it. Run it again to update. <a href="install.sh">Read the script</a> first if you like; it's short.</p>
+      <a class="download download--big" href="https://github.com/STACK-42/peeko/releases/latest/download/Peeko.dmg">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8.5M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Or download the latest DMG
+      </a>
 
       <div class="grid grid--2">
         <article class="card">
           <h3>Prefer the DMG?</h3>
-          <p>Download it from <a href="https://github.com/STACK-42/peeko/releases/latest">Releases</a> and drag Peeko into Applications. It isn't signed with an Apple Developer ID yet, so the first time:</p>
+          <p><a href="https://github.com/STACK-42/peeko/releases/latest/download/Peeko.dmg">Download the latest DMG</a> (or pick a version from <a href="https://github.com/STACK-42/peeko/releases">Releases</a>) and drag Peeko into Applications. It isn't signed with an Apple Developer ID yet, so the first time:</p>
           <ol>
             <li>Open Peeko once and close the warning.</li>
             <li>Go to <strong>System Settings → Privacy &amp; Security</strong>.</li>
@@ -347,7 +385,7 @@ cd peeko
 make install</code></pre>
         </article>
       </div>
-      <p class="requirements">Needs macOS 14 Sonoma or later on an Apple silicon Mac.</p>
+      <p class="requirements">Needs macOS 14 Sonoma or later on an Apple silicon Mac. Windows version coming soon.</p>
     </section>
   </main>
 

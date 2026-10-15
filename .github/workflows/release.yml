@@ -42,6 +42,10 @@ jobs:
             exit 1
           fi
 
+      # A fixed name too, so releases/latest/download/Peeko.dmg always gets the newest one.
+      - name: Unversioned DMG copy
+        run: cp "build/Peeko-$VERSION.dmg" build/Peeko.dmg
+
       - uses: softprops/action-gh-release@v3
         with:
           name: Peeko ${{ env.VERSION }}
@@ -49,3 +53,4 @@ jobs:
           files: |
             build/Peeko-${{ env.VERSION }}.dmg
             build/Peeko-${{ env.VERSION }}.dmg.sha256
+            build/Peeko.dmg

@@ -51,3 +51,18 @@ if (pupils.length && !calm) {
     });
   }, { passive: true });
 }
+
+// Filter the example list by task group, like the chips in the app's Explore page.
+const chips = [...document.querySelectorAll(".chip[data-filter]")];
+const examples = [...document.querySelectorAll(".examples .example")];
+chips.forEach((chip) => {
+  chip.addEventListener("click", () => {
+    const group = chip.dataset.filter;
+    chips.forEach((c) => {
+      const on = c === chip;
+      c.classList.toggle("is-on", on);
+      c.setAttribute("aria-pressed", on);
+    });
+    examples.forEach((card) => (card.hidden = group !== "all" && card.dataset.group !== group));
+  });
+});
