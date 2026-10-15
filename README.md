@@ -4,19 +4,21 @@
 
 [![CI](https://github.com/STACK-42/peeko/actions/workflows/ci.yml/badge.svg)](https://github.com/STACK-42/peeko/actions/workflows/ci.yml)
 
-**The to-do list that checks itself.** A small macOS menu bar app: you do the thing, your Mac sees the evidence, and Peeko ticks it off. **[peeko.stack42.tech](https://peeko.stack42.tech)**
+**The to-do list that checks itself.** A small app for Mac and Windows: you do the thing, your computer sees the evidence, and Peeko ticks it off. **[peeko.stack42.tech](https://peeko.stack42.tech)**
 
-For Mac and Windows. The Windows version is an early preview.
+Most of us finish a task and go straight to the next one without ticking the last. A lot of a normal day happens on a computer, and a lot of that can be checked, so Peeko does the ticking and you look at the list at the end of the day. Keep your usual to-do list for everything else.
 
-Peeko hangs from the top of your screen and peeks at what you're doing. Keep a PDF open in Preview for half an hour and "Read for 30 minutes" ticks itself. Push to GitHub and that one goes green as well. Log off by 11 and it notices that too.
+Peeko lives in the Mac menu bar or the Windows tray and keeps an eye on what you're doing. Keep a PDF open for half an hour and "Read for 30 minutes" ticks itself. Push to GitHub and that one goes green as well. Log off by 11 and it notices that too.
 
-It isn't another to-do list. Everything in Explore is something your Mac can actually check, so you don't spend the evening ticking boxes. (You can still add a few of your own if you want.)
+Everything in Explore is something your computer can check, so your evening isn't spent ticking boxes. You can still add a few tasks of your own and tap them yourself.
 
-It isn't there to police you. It's more like a little green creature that notices when you got something done and looks pleased about it.
+Peeko isn't strict about any of it. Think of a little green creature that notices when you got something done and looks pleased about it.
+
+The Mac app is the main one. The Windows version is an early preview, built by [Asmaa Farouq](https://github.com/Asmaa6777).
 
 ## Where it's at
 
-Early days. What works right now:
+Early days. What works right now on the Mac (Windows has all of it except the Time Machine and Reminders tasks):
 
 - the menu bar icon and popover, with a **Today** list and an **Explore** page of presets, plus a full window when you want more room
 - manual tasks, plus your own custom ones
@@ -83,7 +85,7 @@ On Windows, closing the window keeps Peeko in the tray. Right-click the tray fac
 
 ## Privacy
 
-There are no accounts, servers, or analytics. Your tasks and history are plain JSON files in `~/Library/Application Support/Peeko/`, so you can read them, back them up, or delete them whenever you like.
+There are no accounts, servers, or analytics. Your tasks and history are plain JSON files in `~/Library/Application Support/Peeko/` on a Mac and `%APPDATA%\Peeko` on Windows, so you can read them, back them up, or delete them whenever you like.
 
 If you turn on the GitHub task, Peeko asks GitHub's public API for your public activity every 10 minutes, using the username you gave it. That's the only network request it makes. No token, so private repos don't count.
 
@@ -93,11 +95,11 @@ Peeko only looks at a couple of simple signals:
 
 - **Time in an app:** which app is in front, and whether you've touched the keyboard or mouse in the last couple of minutes. If both hold, the minute counts.
 - **GitHub:** whether your public activity shows a push made today, in your own time zone.
-- **When you're at the Mac:** the stretches of keyboard and mouse activity, used for the sleep and early-morning tasks. It only sees the Mac, not your phone in bed.
+- **When you're at the computer:** the stretches of keyboard and mouse activity, used for the sleep and early-morning tasks. It only sees the computer, not your phone in bed.
 - **Website limits:** the title of the front window, to spot sites like YouTube. This needs Accessibility permission, and Peeko only asks when you turn on a limit that uses it.
-- **Your notes folder:** which `.md` and `.txt` files changed today and how many words were added. Only the folder you pick, and nothing leaves your Mac.
+- **Your notes folder:** which `.md` and `.txt` files changed today and how many words were added. Only the folder you pick, and nothing leaves your computer.
 
-These are proxies, not proof. Leave a PDF open and nudge the mouse now and then, and it will count as reading. That's fine. The point is a nudge, not a lie detector.
+These signals are easy to fool. Leave a PDF open and nudge the mouse now and then, and it will count as reading. That's fine: Peeko is there to nudge you, and fooling it only fools yourself.
 
 ## Build it yourself
 
