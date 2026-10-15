@@ -7,6 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Peeko</AssemblyName>
     <RootNamespace>Peeko.Windows</RootNamespace>
+    <Version>1.0.0</Version>
+    <!-- the icon Explorer, shortcuts and the taskbar show; made by scripts/make-ico.py -->
+    <ApplicationIcon>../../Resources/Peeko.ico</ApplicationIcon>
     <!-- lets `dotnet build` compile this from macOS/Linux; running needs Windows -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>

@@ -1,10 +1,10 @@
-# Peeko for Windows (build 10)
+# Peeko for Windows (v1)
 
 An early, unreleased port. It sits beside the macOS app and shares its data contract: the same
 `tasks.json` / `days/*.json` shapes, `schemaVersion` rules and verifier semantics. Nothing here
 touches `Sources/` or the macOS build.
 
-The current test build is **build 10** (`dist/Peeko-build10.zip`; the footer says "build 10").
+The current release is **v1** (`dist/Peeko-Windows-v1.zip`, GitHub release tag `windows-v1`; the footer says "v1.0.0 · build 13").
 Give the next one a new number and a new zip name, so an old exe is never mistaken for it.
 
 | Path | What |
@@ -13,6 +13,7 @@ Give the next one a new number and a new zip name, so an old exe is never mistak
 | `src/Peeko.Windows` | Tray app (WinForms `NotifyIcon`) and the Win32 providers (foreground window, idle time). |
 | `checks/Peeko.Checks` | Console checks, the equivalent of `make check`. Runs on any OS. |
 | `Resources/catalog.windows.json` | Windows presets. Same shape as the Mac catalog, with `processNames` instead of `bundleIDs`. |
+| `Resources/Peeko.ico` | The exe icon, cut from the Mac `AppIcon.icns`. Rebuild with `python3 windows/scripts/make-ico.py` (needs Pillow). |
 
 ## Try it
 
