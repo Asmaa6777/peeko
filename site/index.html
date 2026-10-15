@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Peeko · the to-do list that checks itself</title>
-  <meta name="description" content="Peeko is a daily list your Mac checks off for you: reading, focus, code, sleep, writing. If it can't be checked, it isn't on the list. Local-first macOS menu bar app.">
+  <meta name="description" content="Peeko is a daily list your computer checks off for you: reading, focus, code, sleep, writing. If it can't be checked, it isn't on the list. Local-first, for Mac, with an early Windows preview.">
   <meta name="theme-color" content="#151515">
   <link rel="icon" type="image/png" href="assets/icon.png">
   <link rel="apple-touch-icon" href="assets/icon.png">
@@ -12,7 +12,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://peeko.stack42.tech/">
   <meta property="og:title" content="Peeko · the to-do list that checks itself">
-  <meta property="og:description" content="A daily list your Mac checks off for you. You do the thing; Peeko sees the evidence and ticks it.">
+  <meta property="og:description" content="A daily list your computer checks off for you. You do the thing; Peeko sees the evidence and ticks it.">
   <meta property="og:site_name" content="Peeko">
   <meta property="og:image" content="https://peeko.stack42.tech/assets/social-preview.png">
   <meta property="og:image:type" content="image/png">
@@ -21,7 +21,7 @@
   <meta property="og:image:alt" content="Peeko, a green creature hanging from the macOS menu bar, next to the words: peeko, peeks in, ticks off.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Peeko · the to-do list that checks itself">
-  <meta name="twitter:description" content="A daily list your Mac checks off for you. You do the thing; Peeko sees the evidence and ticks it.">
+  <meta name="twitter:description" content="A daily list your computer checks off for you. You do the thing; Peeko sees the evidence and ticks it.">
   <meta name="twitter:image" content="https://peeko.stack42.tech/assets/social-preview.png">
   <meta name="twitter:image:alt" content="Peeko, a green creature hanging from the macOS menu bar, next to the words: peeko, peeks in, ticks off.">
   <link rel="canonical" href="https://peeko.stack42.tech/">
@@ -88,7 +88,7 @@
         <p class="wordmark" aria-hidden="true">peeko</p>
         <h1 class="hero__title">The to-do list that <span>checks itself.</span></h1>
         <p class="hero__lede">
-          You don't tick the boxes. Your Mac does. Read in Preview for half an hour, push some code, log off by 11:
+          You don't tick the boxes. Your computer does. Read in Preview for half an hour, push some code, log off by 11:
           Peeko sees the evidence and checks it off. If something can't be checked, it isn't on the list.
         </p>
 
@@ -97,15 +97,19 @@
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8.5M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Download for Mac
           </a>
+          <a class="download download--alt" href="https://github.com/STACK-42/peeko/releases/download/windows-v1/Peeko-Windows-v1.zip">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8.5M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Download for Windows
+          </a>
           <div class="command" role="group" aria-label="Install command">
             <code id="install-cmd">curl -fsSL https://peeko.stack42.tech/install.sh | bash</code>
             <button class="command__copy" type="button" data-copy="install-cmd">Copy</button>
           </div>
         </div>
         <p class="hero__meta">
-          macOS 14+ · Apple silicon · free and MIT-licensed
+          macOS 14+ on Apple silicon · Windows 10 and 11 · free and MIT-licensed
         </p>
-        <p class="soon"><span class="soon__dot" aria-hidden="true"></span>New: an early Windows preview.&nbsp;<a href="https://github.com/STACK-42/peeko/releases/download/windows-v1/Peeko-Windows-v1.zip">Download for Windows</a></p>
+        <p class="soon"><span class="soon__dot" aria-hidden="true"></span><span>New: an early preview for Windows 10 and 11, built by <a href="https://github.com/Asmaa6777">Asmaa Farouq</a>.</span></p>
       </div>
 
       <div class="hero__demo" aria-label="What the Peeko panel looks like">
@@ -199,9 +203,9 @@
           <span role="columnheader"></span><span role="columnheader">A regular to-do list</span><span role="columnheader">Peeko</span>
         </div>
         <div class="compare__row" role="row"><span role="rowheader">Who ticks the box</span><span role="cell">You do</span><span role="cell">The evidence does</span></div>
-        <div class="compare__row" role="row"><span role="rowheader">What goes on it</span><span role="cell">Anything you can type</span><span role="cell">Only things your Mac can check, on purpose</span></div>
+        <div class="compare__row" role="row"><span role="rowheader">What goes on it</span><span role="cell">Anything you can type</span><span role="cell">Only things your computer can check, on purpose</span></div>
         <div class="compare__row" role="row"><span role="rowheader">Keeping it up to date</span><span role="cell">Up to you, every evening</span><span role="cell">Updates itself every 10 seconds</span></div>
-        <div class="compare__row" role="row"><span role="rowheader">Ticking without doing</span><span role="cell">One click</span><span role="cell">You'd have to fool your own Mac</span></div>
+        <div class="compare__row" role="row"><span role="rowheader">Ticking without doing</span><span role="cell">One click</span><span role="cell">You'd have to fool your own computer</span></div>
       </div>
     </section>
 
@@ -215,7 +219,7 @@
         <button type="button" class="chip" data-filter="limits" style="--c:var(--g-limits)" aria-pressed="false">Limits</button>
         <button type="button" class="chip" data-filter="writing" style="--c:var(--g-writing)" aria-pressed="false">Writing</button>
         <button type="button" class="chip" data-filter="routine" style="--c:var(--g-routine)" aria-pressed="false">Sleep &amp; mornings</button>
-        <button type="button" class="chip" data-filter="mac" style="--c:var(--g-mac)" aria-pressed="false">On your Mac</button>
+        <button type="button" class="chip" data-filter="mac" style="--c:var(--g-mac)" aria-pressed="false">On your computer</button>
         <button type="button" class="chip" data-filter="online" style="--c:var(--g-online)" aria-pressed="false">Online</button>
       </div>
       <div class="grid grid--3 examples">
@@ -235,7 +239,7 @@
           <svg class="face face--40"><use href="#face-beaming"/></svg>
           <h3>Committed code today</h3>
           <p class="proof"><b>Proof</b> your local repos show a commit by your email since midnight. Private repos count.</p>
-          <span class="tag" style="--c:var(--g-mac)">On your Mac</span>
+          <span class="tag" style="--c:var(--g-mac)">On your computer</span>
         </article>
         <article class="example" data-group="online">
           <svg class="face face--40"><use href="#face-beaming"/></svg>
@@ -264,7 +268,7 @@
         <article class="example" data-group="routine">
           <svg class="face face--40"><use href="#face-dozing"/></svg>
           <h3>Stopped working by 11 PM</h3>
-          <p class="proof"><b>Proof</b> nothing on the Mac after 23:00. Settled at midnight, even if it's asleep.</p>
+          <p class="proof"><b>Proof</b> nothing on the computer after 23:00. Settled at midnight, even if it's asleep.</p>
           <span class="tag" style="--c:var(--g-routine)">Sleep &amp; mornings</span>
         </article>
         <article class="example" data-group="routine">
@@ -301,7 +305,7 @@
       <div class="grid grid--3">
         <article class="card">
           <h3>If it can't be checked, it's not here</h3>
-          <p>"Drink water" sounds nice, but no Mac can see it. Peeko's Explore page only has things it can actually check, so a green tick means something happened.</p>
+          <p>"Drink water" sounds nice, but no computer can see it. Peeko's Explore page only has things it can actually check, so a green tick means something happened.</p>
         </article>
         <article class="card">
           <h3>Evidence, not policing</h3>
@@ -309,7 +313,7 @@
         </article>
         <article class="card">
           <h3>Room for your own</h3>
-          <p>Some things only you know. You can add a few tasks of your own and tap them, but they live apart from the list your Mac checks.</p>
+          <p>Some things only you know. You can add a few tasks of your own and tap them, but they live apart from the list your computer checks.</p>
         </article>
       </div>
     </section>
@@ -338,24 +342,24 @@
         <li><span style="background:var(--g-limits)"></span>Limits</li>
         <li><span style="background:var(--g-writing)"></span>Writing</li>
         <li><span style="background:var(--g-routine)"></span>Sleep &amp; mornings</li>
-        <li><span style="background:var(--g-mac)"></span>On your Mac</li>
+        <li><span style="background:var(--g-mac)"></span>On your computer</li>
         <li><span style="background:var(--g-online)"></span>Online</li>
       </ul>
     </section>
 
     <section class="section" id="privacy">
       <p class="eyebrow">Privacy</p>
-      <h2>Checked on your Mac. Kept on your Mac.</h2>
+      <h2>Checked on your computer. Kept on your computer.</h2>
       <div class="grid grid--3">
         <article class="card"><h3>No account</h3><p>Nothing to sign up for. No server, no analytics, no telemetry.</p></article>
-        <article class="card"><h3>Plain files</h3><p>Your tasks and history are JSON in <code>~/Library/Application Support/Peeko/</code>. Read them, back them up, or delete them.</p></article>
-        <article class="card"><h3>Only what you turn on</h3><p>The online checks (GitHub, your feed, Duolingo) read public pages, and only if you switch them on. Your activity, notes and repos are checked on your Mac and never leave it.</p></article>
+        <article class="card"><h3>Plain files</h3><p>Your tasks and history are JSON in <code>~/Library/Application Support/Peeko/</code> on a Mac and <code>%APPDATA%\Peeko</code> on Windows. Read them, back them up, or delete them.</p></article>
+        <article class="card"><h3>Only what you turn on</h3><p>The online checks (GitHub, your feed, Duolingo) read public pages, and only if you switch them on. Your activity, notes and repos are checked on your computer and never leave it.</p></article>
       </div>
     </section>
 
     <section class="section" id="install">
       <p class="eyebrow">Install</p>
-      <h2>Paste one line into Terminal.</h2>
+      <h2>On a Mac, paste one line into Terminal.</h2>
       <div class="command command--big" role="group" aria-label="Install command">
         <code id="install-cmd-2">curl -fsSL https://peeko.stack42.tech/install.sh | bash</code>
         <button class="command__copy" type="button" data-copy="install-cmd-2">Copy</button>
