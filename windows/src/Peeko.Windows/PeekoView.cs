@@ -28,7 +28,7 @@ internal sealed class PeekoView : Control
     public const float PopTotalH = HeaderH + TabsH + PopContentH + FooterH;
     private const float SidebarW = 230;
     private const string Version = "1.0.0";
-    private const string Build = "build 13";
+    private const string Build = "build 14";
 
     private readonly ViewMode _mode;
     private readonly Scheduler _scheduler;
@@ -110,6 +110,24 @@ internal sealed class PeekoView : Control
         Dialog(() => AskText.Ask(this, title, label, initial, okText, allowEmpty));
 
     private void Say(string message) => Dialog(() => MessageBox.Show(this, message, "Peeko"));
+
+    /// <summary>Ticks a manual task for today, or unticks it.</summary>
+    private void ToggleManual(TaskDefinition task)
+    {
+        var now = DateTimeOffset.Now;
+        _scheduler.SetManual(task.Id, !_scheduler.StatusOf(task, now).IsDone, now);
+        Invalidate();
+    }
+
+    /// <summary>Your own tasks have no preset to switch back on, so ask before removing one.</summary>
+    private void DeleteCustom(TaskDefinition task)
+    {
+        var answer = Dialog(() => MessageBox.Show(this, $"Remove “{task.Title}” from your tasks?", "Peeko",
+            MessageBoxButtons.YesNo, MessageBoxIcon.None, MessageBoxDefaultButton.Button2));
+        if (answer != DialogResult.Yes) return;
+        _scheduler.SetEnabled(task, false);
+        Invalidate();
+    }
 
     // ───────────────────────── data
 
@@ -385,8 +403,7 @@ internal sealed class PeekoView : Control
             if (manual)
             {
                 Gfx.CheckCircle(g, tr, state.IsDone);
-                var id = task.Id;
-                AddHit(row, () => { _scheduler.SetManual(id, !_scheduler.StatusOf(task, DateTimeOffset.Now).IsDone, DateTimeOffset.Now); Invalidate(); });
+                AddHit(row, () => ToggleManual(task));
             }
             else if (state.IsDone)
             {
@@ -493,11 +510,18 @@ internal sealed class PeekoView : Control
         foreach (var task in _scheduler.Tasks.Where(t => !presetIds.Contains(t.Id)))
         {
             var row = new RectangleF(12, y, W - 24, 52);
-            Gfx.FillRound(g, Theme.Card, row, 10);
-            IconAndText(g, row, task, TaskDetail.Describe(task));
+            var manual = task.Type == VerifierType.Manual;
+            Gfx.FillRound(g, manual && IsHover(row) ? Theme.CardHover : Theme.Card, row, 10);
+            IconAndText(g, row, task, TaskDetail.Describe(task), manual ? 64 : 30);
+            var close = new RectangleF(row.Right - 36, row.Y, 36, row.Height);
             Txt(g, "✕", Theme.Emoji(13), Theme.Muted, row.Right - 12 - 14, row.Y + 17);
             var def = task;
-            AddHit(row, () => { _scheduler.SetEnabled(def, false); Invalidate(); });
+            if (manual)
+            {
+                Gfx.CheckCircle(g, new RectangleF(close.X - 18 - 4, row.Y + 17, 18, 18), _scheduler.StatusOf(task, DateTimeOffset.Now).IsDone);
+                AddHit(row, () => ToggleManual(def));
+            }
+            AddHit(close, () => DeleteCustom(def));
             y += 52 + 6;
         }
 
@@ -688,6 +712,8 @@ internal sealed class PeekoView : Control
                 DrawCard(g, r, items[i], isOn(items[i]), deletable);
                 var item = items[i];
                 AddHit(r, () => click(item));
+                // Added after the card so it wins: only the ✕ deletes.
+                if (deletable) AddHit(new RectangleF(r.Right - 44, r.Y + 8, 36, 36), () => DeleteCustom(item));
             }
             var rows = (items.Count + columns - 1) / columns;
             return y + rows * (cardH + gap) - (rows > 0 ? gap : 0);
@@ -703,7 +729,7 @@ internal sealed class PeekoView : Control
         if (custom.Count > 0)
         {
             y = Section(g, "Your tasks", y);
-            y = Grid(custom, _ => true, t => { _scheduler.SetEnabled(t, false); Invalidate(); }, true) + 18;
+            y = Grid(custom, _ => true, t => { if (t.Type == VerifierType.Manual) ToggleManual(t); }, true) + 18;
         }
 
         y = Section(g, "Add your own", y);
@@ -713,14 +739,20 @@ internal sealed class PeekoView : Control
     private void DrawCard(Graphics g, RectangleF r, TaskDefinition task, bool on, bool deletable)
     {
         var kind = TaskCategory.Of(task);
-        Gfx.FillRound(g, IsHover(r) ? Theme.CardHover : Theme.Card, r, 14);
+        var clickable = !deletable || task.Type == VerifierType.Manual;
+        Gfx.FillRound(g, clickable && IsHover(r) ? Theme.CardHover : Theme.Card, r, 14);
         Gfx.StrokeRound(g, on ? Color.FromArgb(115, Theme.Green) : Color.FromArgb(15, 255, 255, 255), r, 14);
 
         var icon = new RectangleF(r.X + 16, r.Y + 16, 36, 36);
         Gfx.FillRound(g, Color.FromArgb(31, kind.Color), icon, 10);
         Txt(g, Glyph(task.Icon), Theme.Emoji(17), kind.Color, icon.X + 8, icon.Y + 7);
 
-        if (deletable) Txt(g, "✕", Theme.Emoji(13), Theme.Muted, r.Right - 16 - 14, r.Y + 20);
+        if (deletable)
+        {
+            Txt(g, "✕", Theme.Emoji(13), Theme.Muted, r.Right - 16 - 14, r.Y + 20);
+            if (task.Type == VerifierType.Manual)
+                Gfx.CheckCircle(g, new RectangleF(r.Right - 16 - 14 - 14 - 18, r.Y + 20, 18, 18), _scheduler.StatusOf(task, DateTimeOffset.Now).IsDone);
+        }
         else Gfx.Toggle(g, new RectangleF(r.Right - 16 - 30, r.Y + 26, 30, 16), on);
 
         var textW = r.Width - 32;
@@ -981,12 +1013,12 @@ internal sealed class PeekoView : Control
         _ => "●",
     };
 
-    private static void IconAndText(Graphics g, RectangleF row, TaskDefinition task, string detail)
+    private static void IconAndText(Graphics g, RectangleF row, TaskDefinition task, string detail, float trailing = 30)
     {
         string icon = task.Icon, title = task.Title;
         Txt(g, Glyph(icon), Theme.Emoji(14), TaskCategory.Of(task).Color, row.X + 12, row.Y + 16);
         var x = row.X + 12 + 22 + 12;
-        var w = row.Width - (x - row.X) - 12 - 30 - 8;
+        var w = row.Width - (x - row.X) - 12 - trailing - 8;
         Txt(g, title, Theme.RowTitle, Theme.Chalk, x, row.Y + 8, w);
         Txt(g, detail, Theme.Mono11, Theme.Muted, x, row.Y + 29, w);
     }
