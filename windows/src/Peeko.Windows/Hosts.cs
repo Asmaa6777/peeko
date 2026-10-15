@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Peeko.Core;
 
 namespace Peeko.Windows;
 
@@ -93,38 +94,61 @@ internal sealed class PopoverForm : Form
         _view.Focus();
     }
 
-    /// <summary>Next to the tray, on whichever edge the taskbar is, on the screen under the cursor.</summary>
+    /// <summary>
+    /// Just above the taskbar (or beside it, on whichever edge it is), on the screen under the
+    /// cursor. Asks the shell where the taskbar is, so an auto-hidden one is still cleared.
+    /// </summary>
     private void PlaceNearTray()
     {
         var cursor = Cursor.Position;
         var screen = Screen.FromPoint(cursor);
         var bounds = screen.Bounds;
-        var work = screen.WorkingArea;
-        const int gap = 12;
-        int x, y;
-        if (work.Bottom < bounds.Bottom)           // taskbar at the bottom (the usual)
+        var s = DeviceDpi / 96f;
+        var gap = (int)(12 * s);
+
+        // The shell's answer covers auto-hide but only knows the main taskbar; the working area
+        // covers this screen's own taskbar. Neither: assume a bottom taskbar (the default).
+        var bar = AppBar.MainTaskbar() is { } main && main.Rect.IntersectsWith(bounds) ? main
+            : PopoverPlacement.FromWorkingArea(bounds, screen.WorkingArea)
+            ?? (TaskbarEdge.Bottom, bounds with { Y = bounds.Bottom, Height = 0 });
+        var taskbar = PopoverPlacement.Normalize(bar.Edge, bar.Rect, bounds, (int)(48 * s));
+        Location = PopoverPlacement.Place(Size, bounds, bar.Edge, taskbar, cursor, gap);
+    }
+}
+
+/// <summary>Where the shell says the taskbar is (ABM_GETTASKBARPOS), auto-hidden or not.</summary>
+internal static class AppBar
+{
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT { public int Left, Top, Right, Bottom; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct APPBARDATA
+    {
+        public int cbSize;
+        public IntPtr hWnd;
+        public uint uCallbackMessage;
+        public uint uEdge;
+        public RECT rc;
+        public IntPtr lParam;
+    }
+
+    [DllImport("shell32.dll")] private static extern UIntPtr SHAppBarMessage(uint dwMessage, ref APPBARDATA pData);
+
+    public static (TaskbarEdge Edge, Rectangle Rect)? MainTaskbar()
+    {
+        var data = new APPBARDATA { cbSize = Marshal.SizeOf<APPBARDATA>() };
+        if (SHAppBarMessage(5 /* ABM_GETTASKBARPOS */, ref data) == UIntPtr.Zero) return null;
+        var rect = Rectangle.FromLTRB(data.rc.Left, data.rc.Top, data.rc.Right, data.rc.Bottom);
+        if (rect.Width <= 0 || rect.Height <= 0) return null;
+        TaskbarEdge edge = data.uEdge switch   // ABE_LEFT 0, ABE_TOP 1, ABE_RIGHT 2, ABE_BOTTOM 3
         {
-            x = cursor.X - Width / 2;
-            y = work.Bottom - Height - gap;
-        }
-        else if (work.Top > bounds.Top)            // top
-        {
-            x = cursor.X - Width / 2;
-            y = work.Top + gap;
-        }
-        else if (work.Left > bounds.Left)          // left
-        {
-            x = work.Left + gap;
-            y = cursor.Y - Height / 2;
-        }
-        else                                       // right, or an auto-hidden taskbar
-        {
-            x = work.Right - Width - gap;
-            y = work.Bottom - Height - gap;
-        }
-        x = Math.Clamp(x, work.Left + gap, work.Right - Width - gap);
-        y = Math.Clamp(y, work.Top + gap, work.Bottom - Height - gap);
-        Location = new Point(x, y);
+            0 => TaskbarEdge.Left,
+            1 => TaskbarEdge.Top,
+            2 => TaskbarEdge.Right,
+            _ => TaskbarEdge.Bottom,
+        };
+        return (edge, rect);
     }
 }
 

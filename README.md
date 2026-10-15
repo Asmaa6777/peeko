@@ -62,7 +62,7 @@ To uninstall, quit Peeko, then delete `/Applications/Peeko.app`. If you want you
 
 ### Windows
 
-[Download Peeko for Windows](https://github.com/STACK-42/peeko/releases/download/windows-build10/Peeko-build10.zip) (build 10, Windows 10 or 11, 64-bit), unzip it somewhere you'll keep it, and open `Peeko.exe`. Peeko isn't signed yet, so Windows may show "Windows protected your PC" the first time: click **More info**, then **Run anyway**. You only have to do that once.
+[Download Peeko for Windows](https://github.com/STACK-42/peeko/releases/download/windows-v1/Peeko-Windows-v1.zip) (v1, Windows 10 or 11, 64-bit), unzip it somewhere you'll keep it, and open `Peeko.exe`. Peeko isn't signed yet, so Windows may show "Windows protected your PC" the first time: click **More info**, then **Run anyway**. You only have to do that once.
 
 Look for the Peeko face in the tray (it may be tucked under the `^` arrow). Left-click it to open Peeko, or right-click for a quick menu. To have it start with Windows, turn on launch at login in Settings.
 

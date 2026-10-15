@@ -674,6 +674,47 @@ DayRecord Spans(params (DateTimeOffset s, DateTimeOffset e)[] spans)
     Check("preset ids are unique", cat.Presets.Select(p => p.Id).Distinct().Count() == cat.Presets.Count);
 }
 
+// Tray popover placement: always clear of the taskbar.
+{
+    var screen = new System.Drawing.Rectangle(0, 0, 1920, 1080);
+    var pop = new System.Drawing.Size(320, 528);
+    const int gap = 12;
+    System.Drawing.Rectangle PopAt(System.Drawing.Point p) => new(p, pop);
+
+    var bottomWork = new System.Drawing.Rectangle(0, 0, 1920, 1032);
+    var bar = PopoverPlacement.FromWorkingArea(screen, bottomWork)!.Value;
+    Check("bottom taskbar found from the working area",
+        bar.Edge == TaskbarEdge.Bottom && bar.Rect == new System.Drawing.Rectangle(0, 1032, 1920, 48));
+    var p = PopAt(PopoverPlacement.Place(pop, screen, bar.Edge, bar.Rect, new(1800, 1050), gap));
+    Check("bottom: sits just above the taskbar", p.Bottom == 1032 - gap);
+    Check("bottom: clamped inside the right edge", p.Right == 1920 - gap);
+    p = PopAt(PopoverPlacement.Place(pop, screen, bar.Edge, bar.Rect, new(900, 1050), gap));
+    Check("bottom: centred on the click", p.Left == 900 - 160 && p.Bottom == 1032 - gap);
+    p = PopAt(PopoverPlacement.Place(pop, screen, bar.Edge, bar.Rect, new(300, 200), gap));
+    Check("bottom: keyboard open goes to the tray end", p.Right == 1920 - gap && p.Bottom == 1032 - gap);
+
+    Check("auto-hidden taskbar isn't in the working area", PopoverPlacement.FromWorkingArea(screen, screen) is null);
+    var hidden = PopoverPlacement.Normalize(TaskbarEdge.Bottom, new(0, 1078, 1920, 2), screen, 48);
+    Check("auto-hidden sliver grows to a full taskbar", hidden == new System.Drawing.Rectangle(0, 1032, 1920, 48));
+    p = PopAt(PopoverPlacement.Place(pop, screen, TaskbarEdge.Bottom, hidden, new(1800, 1079), gap));
+    Check("auto-hidden: still clears where the taskbar slides in", p.Bottom <= 1032 - gap);
+
+    var top = PopoverPlacement.FromWorkingArea(screen, new(0, 48, 1920, 1032))!.Value;
+    p = PopAt(PopoverPlacement.Place(pop, screen, top.Edge, top.Rect, new(1800, 20), gap));
+    Check("top: just below the taskbar", top.Edge == TaskbarEdge.Top && p.Top == 48 + gap);
+    var left = PopoverPlacement.FromWorkingArea(screen, new(60, 0, 1860, 1080))!.Value;
+    p = PopAt(PopoverPlacement.Place(pop, screen, left.Edge, left.Rect, new(30, 1050), gap));
+    Check("left: beside the taskbar, on screen", left.Edge == TaskbarEdge.Left && p.Left == 60 + gap && p.Bottom == 1080 - gap);
+    var right = PopoverPlacement.FromWorkingArea(screen, new(0, 0, 1860, 1080))!.Value;
+    p = PopAt(PopoverPlacement.Place(pop, screen, right.Edge, right.Rect, new(1890, 1050), gap));
+    Check("right: beside the taskbar", right.Edge == TaskbarEdge.Right && p.Right == 1860 - gap);
+
+    var second = new System.Drawing.Rectangle(1920, 0, 2560, 1440);
+    var bar2 = PopoverPlacement.FromWorkingArea(second, new(1920, 0, 2560, 1392))!.Value;
+    p = PopAt(PopoverPlacement.Place(pop, second, bar2.Edge, bar2.Rect, new(4400, 1420), gap));
+    Check("second screen: above its own taskbar", p.Bottom == 1392 - gap && p.Right == 1920 + 2560 - gap);
+}
+
 Console.WriteLine(failures == 0 ? "\nAll checks passed." : $"\n{failures} check(s) failed.");
 return failures == 0 ? 0 : 1;
 
