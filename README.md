@@ -108,7 +108,7 @@ These signals are easy to fool. Leave a PDF open and nudge the mouse now and the
 You need macOS 14 or later on an Apple silicon Mac, and Apple's Command Line Tools (`xcode-select --install`). You don't need Xcode.
 
 ```sh
-git clone https://github.com/STACK-42/peeko.git
+git clone https://github.com/STACK-42/peeko.git peeko
 cd peeko
 make run
 ```
@@ -120,7 +120,7 @@ That builds `build/Peeko.app` and opens it. Use `make install` instead to put it
 You need Windows 10 or 11 and the [.NET SDK](https://dotnet.microsoft.com/download) (8 or newer).
 
 ```sh
-git clone https://github.com/STACK-42/peeko.git
+git clone https://github.com/STACK-42/peeko.git peeko
 cd peeko
 dotnet run --project windows/src/Peeko.Windows
 ```
