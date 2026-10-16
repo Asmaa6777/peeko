@@ -173,6 +173,9 @@ h1, h2, h3 { margin: 0; line-height: 1.1; }
 .download--alt { background: var(--card); color: var(--chalk); box-shadow: inset 0 0 0 1px var(--line); }
 .download--alt:hover { filter: none; background: #2a2a28; }
 .get .command { flex-basis: 100%; }
+/* On Windows, main.js swaps the two buttons so the Windows one leads. */
+.is-windows .get [data-os="windows"] { order: -1; }
+.is-windows .get .command { display: none; }
 .download--big { margin-top: 20px; }
 .soon { display: flex; align-items: baseline; gap: 8px; margin: 8px 0 0; font: 13px var(--mono); color: var(--muted); }
 .soon__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blush); flex: none; transform: translateY(-1px); }

@@ -1,3 +1,12 @@
+// Lead with the Windows download for Windows visitors; everyone else sees the Mac one first.
+const onWindows = [navigator.userAgentData?.platform, navigator.userAgent].some((s) => /Windows/i.test(s || ""));
+if (onWindows) {
+  document.documentElement.classList.add("is-windows");
+  document.querySelectorAll(".get .download").forEach((link) => {
+    link.classList.toggle("download--alt", link.dataset.os !== "windows");
+  });
+}
+
 // Copy buttons
 document.querySelectorAll("[data-copy]").forEach((button) => {
   button.addEventListener("click", async () => {
