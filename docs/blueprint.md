@@ -201,6 +201,7 @@ Icon: design a 1024×1024 PNG, generate the sizes with `sips`, and convert with 
 
 ### Launch at login
 - `SMAppService.mainApp.register()` (macOS 13+). It works best when the app lives in `/Applications`.
+- On by default: the first launch registers it once (a `UserDefaults` flag records that), with no prompt. Turning it off in Settings sticks.
 
 ### Versioning
 - **SemVer** (`MAJOR.MINOR.PATCH`). Bump `CFBundleShortVersionString` every release, and increment `CFBundleVersion` every build.

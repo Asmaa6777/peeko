@@ -41,6 +41,7 @@ final class AppModel {
     private var breakMessageIndex = 0
 
     private static let lastNudgeDayKey = "lastNudgeDay"
+    private static let launchAtLoginDefaultKey = "launchAtLoginDefaultApplied"
 
     init(store: Store = Store(directory: Store.defaultDirectory), bundle: Bundle = .main) {
         self.store = store
@@ -72,7 +73,21 @@ final class AppModel {
         }
         scheduler.start()
         loadHistoryIfNeeded()
+        turnOnLaunchAtLoginOnce()
         Task { await refreshSystemStatus() }
+    }
+
+    /// Peeko only sees what happens while it runs, so it starts at login unless you turn that off.
+    /// This runs once; after that, the Settings toggle is the only thing that changes it.
+    private func turnOnLaunchAtLoginOnce() {
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: Self.launchAtLoginDefaultKey) else { return }
+        if SMAppService.mainApp.status != .enabled {
+            // Quietly retried next launch if it fails (say, run from a disk image).
+            guard (try? SMAppService.mainApp.register()) != nil else { return }
+        }
+        defaults.set(true, forKey: Self.launchAtLoginDefaultKey)
+        launchAtLoginStatus = SMAppService.mainApp.status
     }
 
     var tasks: [TaskDefinition] { taskList.tasks }

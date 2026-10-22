@@ -4,6 +4,10 @@ All notable changes to Peeko are listed here. The format follows [Keep a Changel
 
 ## [Unreleased]
 
+### Changed
+
+- Peeko now starts at login by default, so it's there every time you sign in. It turns this on once, the first time you open this version; switch it off in Settings and it stays off.
+
 ### Added
 
 - "Solved a LeetCode problem" and "Solved a Codeforces problem": an accepted solution today, checked like the GitHub push (Codeforces' official API; LeetCode's public GraphQL, which is unofficial). When a site can't be reached, the task says so.

@@ -35,7 +35,7 @@ Early days. What works right now on the Mac (Windows has all of it except the Ti
 - a gentle nudge to get up and walk for 5 minutes after every hour at the screen (stepping away for 5 minutes resets it)
 - a History tab with your streak, a five-week calendar, and how often you did each task
 - export everything to one JSON file
-- launch at login
+- starts when you log in, so it's always there (you can turn that off in Settings)
 - everything saved locally, with a fresh list each morning
 
 Not built yet: auto-updates. For now, new versions are on the Releases page.
