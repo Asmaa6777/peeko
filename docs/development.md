@@ -19,6 +19,7 @@ Install the tools with `xcode-select --install`, and check them with `swift --ve
 | `make app` | Builds, bundles and signs without launching |
 | `make install` | Builds, then replaces `/Applications/Peeko.app` and opens it |
 | `make check` | Runs the logic checks in `Checks/` (stand-in for unit tests, see below) |
+| `make downloads` | Prints download counts for each release file (Mac and Windows), from GitHub. Set `GITHUB_TOKEN` if you hit the rate limit |
 | `make clean` | Deletes `.build/` and `build/` |
 | `swift build` | Quick debug compile, useful to catch errors |
 
