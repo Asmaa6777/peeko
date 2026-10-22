@@ -57,6 +57,17 @@ When strangers start downloading it, the next step is a **Developer ID** certifi
 
 In CI, the certificate (as base64) and an app-specific password go in repository secrets.
 
+## Windows
+
+The Windows app in `windows/` has its own tags, `windows-v1`, `windows-v2` and so on, never `vX.Y.Z`. Pushing one runs `.github/workflows/release-windows.yml`, which:
+
+1. runs `windows/checks/Peeko.Checks`
+2. publishes a self-contained `Peeko.exe` for win-x64
+3. zips it as `Peeko-Windows-vN.zip` with a `.sha256` next to it
+4. creates a prerelease that is never marked Latest, so `releases/latest` (the Mac download button and `install.sh`) keeps pointing at the Mac release
+
+Before tagging, bump `<Version>` in `windows/src/Peeko.Windows/Peeko.Windows.csproj` and the `Build` string in `PeekoView.cs`, then point the README and site links at the new zip.
+
 ## Not yet
 
 - **Auto-updates (Sparkle):** planned for v0.2. The bundle layout already allows for it.

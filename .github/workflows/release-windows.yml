@@ -1,0 +1,54 @@
+name: Release (Windows)
+
+on:
+  push:
+    tags: ["windows-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Checks
+        run: dotnet run --project windows/checks/Peeko.Checks
+
+      # windows-v1 -> Peeko-Windows-v1.zip, matching the name in windows/README.md.
+      - name: Build the exe
+        run: |
+          $name = "Peeko-Windows-" + ("$env:GITHUB_REF_NAME" -replace '^windows-', '')
+          "NAME=$name" >> $env:GITHUB_ENV
+          dotnet publish windows/src/Peeko.Windows -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true -o "dist/$name"
+
+      - name: Zip it
+        run: |
+          Compress-Archive -Path "dist/$env:NAME/*" -DestinationPath "dist/$env:NAME.zip"
+          $hash = (Get-FileHash "dist/$env:NAME.zip" -Algorithm SHA256).Hash.ToLower()
+          # LF, not CRLF, so `shasum -c` works on Mac and Linux too.
+          [IO.File]::WriteAllText("dist/$env:NAME.zip.sha256", "$hash  $env:NAME.zip`n")
+
+      # Never "Latest": the Mac install script and download button follow releases/latest.
+      - uses: softprops/action-gh-release@v3
+        with:
+          name: Peeko for Windows ${{ github.ref_name }}
+          body: |
+            An early preview of Peeko for Windows 10 and 11 (64-bit).
+
+            Download `${{ env.NAME }}.zip`, unzip it somewhere you'll keep it, and open `Peeko.exe`. It isn't signed yet, so if Windows shows "Windows protected your PC", click **More info**, then **Run anyway**.
+          prerelease: true
+          make_latest: "false"
+          files: |
+            dist/${{ env.NAME }}.zip
+            dist/${{ env.NAME }}.zip.sha256

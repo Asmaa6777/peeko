@@ -1,11 +1,11 @@
 # Peeko for Windows (v1)
 
-An early, unreleased port. It sits beside the macOS app and shares its data contract: the same
+An early port. It sits beside the macOS app and shares its data contract: the same
 `tasks.json` / `days/*.json` shapes, `schemaVersion` rules and verifier semantics. Nothing here
 touches `Sources/` or the macOS build.
 
 The current release is **v1** (`dist/Peeko-Windows-v1.zip`, GitHub release tag `windows-v1`; the footer says "v1.0.0 · build 13").
-Give the next one a new number and a new zip name, so an old exe is never mistaken for it.
+Give the next one a new number and a new zip name, so an old exe is never mistaken for it. To release, push a `windows-vN` tag: `.github/workflows/release-windows.yml` runs the checks, builds the zip on GitHub's Windows runners, and publishes it as a prerelease.
 
 | Path | What |
 |---|---|

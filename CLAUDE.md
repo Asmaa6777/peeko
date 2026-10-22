@@ -17,7 +17,7 @@ Peeko is a local-first macOS menu bar app (Swift 6, SwiftUI, SwiftPM, **no Xcode
 
 **Status:** v0.2.0 (Phases 1–5, break reminders, sleep/wake/writing tasks, history and streaks, export). Next on the roadmap: Sparkle auto-updates, appLimit; see the blueprint (§9).
 
-**Windows status:** an early port (`windows/`, v1, "build 13"; released under the tag `windows-v1`, never a `v*` tag). It runs every task type except `backup` (Time Machine) and `reminders` (EventKit), which are macOS-only and stay that way: manual, appTime, appLimit (with window-title filters), activity windows, online checks (GitHub, feeds, Duolingo, LeetCode, Codeforces), notes folders, git commits and desktop tidy. It also has history and streaks, evening and break reminders, and the GitHub username setting, shaped like the macOS app: a tray popover (left-click the tray face) and a resizable main window with a sidebar and the Explore card grid, both hand-drawn to mirror the macOS look. Not done: an installer, signing, auto-updates, onboarding, and Windows CI.
+**Windows status:** an early port (`windows/`, v1, "build 13"; released under the tag `windows-v1`, never a `v*` tag). It runs every task type except `backup` (Time Machine) and `reminders` (EventKit), which are macOS-only and stay that way: manual, appTime, appLimit (with window-title filters), activity windows, online checks (GitHub, feeds, Duolingo, LeetCode, Codeforces), notes folders, git commits and desktop tidy. It also has history and streaks, evening and break reminders, and the GitHub username setting, shaped like the macOS app: a tray popover (left-click the tray face) and a resizable main window with a sidebar and the Explore card grid, both hand-drawn to mirror the macOS look. Not done: an installer, signing, auto-updates, onboarding, and Windows CI on pushes.
 
 **Naming:** the blueprint's working name was "Proof". Use **Peeko** everywhere (`PeekoCore`, `Peeko.app`, `com.a7med7x7.peeko`, `~/Library/Application Support/Peeko/`, `User-Agent: Peeko-App`, `Peeko-x.y.z.dmg`).
 
@@ -37,7 +37,7 @@ Needs the .NET SDK (8 or newer), not Xcode or Swift. Run from the repo root:
 - `dotnet run --project windows/checks/Peeko.Checks`: the Windows equivalent of `make check`. Runs on any OS and exits non-zero on failure. Add a check here for any new core logic.
 - `dotnet build windows/src/Peeko.Windows`: compile check. `EnableWindowsTargeting` is on, so this works from macOS or Linux, but the app only runs on Windows.
 - `dotnet publish windows/src/Peeko.Windows -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o windows/dist/<name>`: a self-contained `Peeko.exe` (about 72 MB compressed; it bundles .NET and WinForms, and WinForms can't be trimmed). `windows/dist/`, `bin/` and `obj/` are git-ignored.
-- Release tags, CI and the installer for Windows don't exist yet. Don't reuse the `vX.Y.Z` macOS release workflow for it.
+- Release: push a `windows-vN` tag. `.github/workflows/release-windows.yml` runs the checks on `windows-latest`, publishes the self-contained exe, and attaches `Peeko-Windows-vN.zip` plus a `.sha256` as a prerelease that is never marked Latest (the Mac download button and `install.sh` follow `releases/latest`). Bump `<Version>` and the `Build` string in `PeekoView.cs` first, and update the zip links in the README and site. There is still no installer or Windows CI on pushes.
 
 ## Must-knows
 
